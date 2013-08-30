@@ -1,7 +1,7 @@
 {
   "name": "restful-ng-mock",
   "version": "0.0.1",
-  "description": "Easily mock RESTful web APIs with Angular's $httpBackend",
+  "description": "Mock up RESTful interfaces quickly with Angular's $httpBackend.",
   "main": "restful-ng-mock.min.js",
   "directories": {
     "test": "test"

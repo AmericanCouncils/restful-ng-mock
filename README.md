@@ -1,3 +1,3 @@
 # restful-ng-mock
 
-Makes it easier for Angular's $httpBackend to fake RESTful interfaces.
+Mock up RESTful interfaces quickly with Angular's $httpBackend.
