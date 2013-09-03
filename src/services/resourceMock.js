@@ -38,9 +38,10 @@ function($httpBackend) {
     .respond(function(method, rawUrl, data, headers) {
       return me.handle(rawUrl, data, headers, {
         atItem: function(itemId) {
-          var item = dataSource[itemId];
-          if (item) {
-            // Do something
+          if (dataSource[itemId]) {
+            var newItem = JSON.parse(data);
+            dataSource[itemId] = newItem;
+            return me.jsonResponse(newItem);
           }
         }
       });

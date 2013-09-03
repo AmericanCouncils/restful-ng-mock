@@ -76,6 +76,26 @@ describe('restfulNgMock', function () {
         expect(result.data).toEqual(books['2']);
       });
 
+      it('can update an item', function () {
+        grabHttpResult($http.put('/books/2', {
+          title: 'Diamond Age',
+          author: 'Neal Stephensen'
+        }));
+        $httpBackend.flush();
+        expect(result.data.title).toEqual('Diamond Age');
+        expect(books['2'].title).toEqual('Diamond Age');
+      });
+
+      it('can delete an item', function () {
+        grabHttpResult($http.delete('/books/2'));
+        $httpBackend.flush();
+        expect(books[2]).not.toBeDefined();
+
+        grabHttpResult($http.get('/books/2'));
+        $httpBackend.flush()
+        expect(result.status).toEqual(404);
+      });
+
       it('returns a 404 error if id not found', function () {
         for (var i = 0; i < METHODS.length; ++i) {
           if (METHODS[i] != 'POST') {
@@ -88,16 +108,6 @@ describe('restfulNgMock', function () {
             });
           }
         }
-      });
-
-      it('can delete an item by id', function () {
-        grabHttpResult($http.delete('/books/2'));
-        $httpBackend.flush();
-        expect(books[2]).not.toBeDefined();
-
-        grabHttpResult($http.get('/books/2'));
-        $httpBackend.flush()
-        expect(result.status).toEqual(404);
       });
     });
   });
