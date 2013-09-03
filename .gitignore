@@ -1,4 +1,5 @@
 build/*.debug.js
+bower_components
 
 #################
 ## Vim
