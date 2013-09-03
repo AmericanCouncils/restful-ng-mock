@@ -30,14 +30,17 @@ describe('restfulNgMock', function () {
       beforeEach(function() {
         books = {
           '1' : {
+            id: '1',
             title: "A Woman of the Iron People",
             author: "Eleanor Arnason"
           },
           '2' : {
+            id: '2',
             title: "Anathem",
             author: "Neal Stephensen"
           },
           '3' : {
+            id: '3',
             title: "The C++ Programming Language",
             author: "Bjarne Stroustrup"
           }
@@ -83,7 +86,9 @@ describe('restfulNgMock', function () {
         }));
         $httpBackend.flush();
         expect(result.data.title).toEqual('Diamond Age');
+        expect(result.data.id).toEqual('2');
         expect(books['2'].title).toEqual('Diamond Age');
+        expect(books['2'].id).toEqual('2');
       });
 
       it('can delete an item', function () {

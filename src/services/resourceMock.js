@@ -40,6 +40,7 @@ function($httpBackend) {
         atItem: function(itemId) {
           if (dataSource[itemId]) {
             var newItem = JSON.parse(data);
+            newItem.id = itemId;
             dataSource[itemId] = newItem;
             return me.jsonResponse(newItem);
           }
