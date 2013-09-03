@@ -14,8 +14,8 @@ describe('resourceMock', function () {
 
   var result;
   function grabHttpResult(h) {
+    result = {};
     var grab = function(d, s, h, c) {
-      result = {};
       result.data = d;
       result.status = s;
       result.headers = h;
@@ -209,6 +209,24 @@ describe('resourceMock', function () {
       expect(newId).not.toEqual('4');
       expect(newId).not.toEqual('5');
       expect(result.data).toEqual(foods['b'][newId]);
+    });
+
+    it('creates new parent path for new subitem if needed', function () {
+      // Note: This does not create a new store resource!
+
+      grabHttpResult($http.post('/stores/x/foods', {
+        name: 'Chicken-Fried Steak'
+      }));
+      $httpBackend.flush();
+      expect(result.status).toEqual(200);
+      expect(result.data.name).toEqual('Chicken-Fried Steak');
+      var newId = String(result.data.id);
+      expect(result.data).toEqual(foods['x'][newId]);
+
+      grabHttpResult($http.get('/stores/x/foods/' + newId));
+      $httpBackend.flush()
+      expect(result.status).toEqual(200);
+      expect(result.data.name).toEqual('Chicken-Fried Steak');
     });
 
     it('updates a subitem', function () {
