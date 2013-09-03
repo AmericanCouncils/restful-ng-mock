@@ -77,13 +77,17 @@ describe('restfulNgMock', function () {
       });
 
       it('returns a 404 error if id not found', function () {
-        grabHttpResult($http.get('/books/22'));
-        $httpBackend.flush();
-        expect(result.status).toEqual(404);
-        expect(result.data).toEqual({
-          code: 404,
-          message: "Not Found"
-        });
+        for (var i = 0; i < METHODS.length; ++i) {
+          if (METHODS[i] != 'POST') {
+            grabHttpResult($http[METHODS[i].toLowerCase()]('/books/22'));
+            $httpBackend.flush();
+            expect(result.status).toEqual(404);
+            expect(result.data).toEqual({
+              code: 404,
+              message: "Not Found"
+            });
+          }
+        }
       });
 
       it('returns a 400 error on invalid path on any HTTP method', function() {

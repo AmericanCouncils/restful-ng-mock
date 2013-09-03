@@ -38,12 +38,34 @@ function($httpBackend) {
     });
 
     $httpBackend.whenPUT(new RegExp(baseUrlRe))
-    .respond(function(/*method, rawUrl, data, headers*/) {
+    .respond(function(method, rawUrl/*, data, headers*/) {
+      var url = purl(rawUrl);
+
+      var match = baseUrlRe.exec(url.attr('path'));
+      if (match && /^[\w\-]+$/.test(match[1])) {
+        var item = dataSource[match[1]];
+        if (item) {
+          // something
+        }
+        return me.jsonErrorResponse(404, 'Not Found');
+      }
+
       return me.jsonErrorResponse(400, 'Bad Request');
     });
 
     $httpBackend.whenDELETE(new RegExp(baseUrlRe))
-    .respond(function(/*method, rawUrl, data, headers*/) {
+    .respond(function(method, rawUrl/*, data, headers*/) {
+      var url = purl(rawUrl);
+
+      var match = baseUrlRe.exec(url.attr('path'));
+      if (match && /^[\w\-]+$/.test(match[1])) {
+        var item = dataSource[match[1]];
+        if (item) {
+          // something
+        }
+        return me.jsonErrorResponse(404, 'Not Found');
+      }
+
       return me.jsonErrorResponse(400, 'Bad Request');
     });
   };
