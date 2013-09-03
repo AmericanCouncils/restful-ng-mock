@@ -24,21 +24,7 @@ function($httpBackend) {
   };
 
   var ResourceMock = function (baseUrl, dataSource) {
-    if (!(/^\/[\w\-]+(\/[\w\-]+|\/\?)*$/).test(baseUrl)) {
-      throw 'Invalid baseUrl for resourceMock: "' + baseUrl + '".';
-    }
-    this.baseUrl = baseUrl;
-
-    var requiredSegments = 0;
-    for (var cidx = 0; cidx < baseUrl.length; ++cidx) {
-      if (baseUrl.charAt(cidx) === '?') { ++requiredSegments; }
-    }
-
-    var urlPattern = baseUrl
-      .replace('/', '\\/', 'g')
-      .replace('?', '([\\w\\-]+)');
-    var baseUrlRe = new RegExp( '^' + urlPattern  + '(?:/([\\w\\-]+))?$');
-
+    // Execute callbacks for a given url
     var handle = function(rawUrl, data, headers, handlers) {
       var url = purl(rawUrl);
       var matches = baseUrlRe.exec(url.attr('path')).slice(1);
@@ -64,6 +50,7 @@ function($httpBackend) {
       return buildJsonErrorResponse(404, 'Not Found');
     };
 
+    // Returns the object used for storing mock resource items
     var getStorage = function(ids, autoCreate) {
       autoCreate = autoCreate || false;
       var d = dataSource;
@@ -81,6 +68,25 @@ function($httpBackend) {
       }
       return d || null;
     };
+
+    // ***
+    // *** ResourceMock init begins here
+    // ***
+
+    if (!(/^\/[\w\-]+(\/[\w\-]+|\/\?)*$/).test(baseUrl)) {
+      throw 'Invalid baseUrl for resourceMock: "' + baseUrl + '".';
+    }
+    this.baseUrl = baseUrl;
+
+    var requiredSegments = 0;
+    for (var cidx = 0; cidx < baseUrl.length; ++cidx) {
+      if (baseUrl.charAt(cidx) === '?') { ++requiredSegments; }
+    }
+
+    var urlPattern = baseUrl
+      .replace('/', '\\/', 'g')
+      .replace('?', '([\\w\\-]+)');
+    var baseUrlRe = new RegExp( '^' + urlPattern  + '(?:/([\\w\\-]+))?$');
 
     $httpBackend.whenGET(new RegExp(baseUrlRe))
     .respond(function(method, rawUrl, data, headers) {
