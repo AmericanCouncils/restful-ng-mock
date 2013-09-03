@@ -8,69 +8,79 @@ function($httpBackend) {
     if (!(/^\/[\w\/\-]+\w$/).test(baseUrl)) {
       throw 'Invalid baseUrl for resourceMock: "' + baseUrl + '".';
     }
-    var baseUrlRe = new RegExp('^' + baseUrl.replace('/', '\\/', 'g') + '/?(.*)$');
+
+    this.baseUrl = baseUrl;
+    this.baseUrlRe = new RegExp('^' + baseUrl.replace('/', '\\/', 'g') + '/?(.*)$');
 
     var me = this;
 
-    $httpBackend.whenGET(new RegExp(baseUrlRe))
-    .respond(function(method, rawUrl/*, data, headers*/) {
-      var url = purl(rawUrl);
-
-      if (url.attr('path') === baseUrl) {
-        return me.jsonResponse(dataSource);
-      }
-
-      var match = baseUrlRe.exec(url.attr('path'));
-      if (match && /^[\w\-]+$/.test(match[1])) {
-        var item = dataSource[match[1]];
-        if (item) {
-          return me.jsonResponse(item);
+    $httpBackend.whenGET(new RegExp(this.baseUrlRe))
+    .respond(function(method, rawUrl, data, headers) {
+      return me.handle(rawUrl, data, headers, {
+        atRoot: function() {
+          return me.jsonResponse(dataSource);
+        },
+        atItem: function(itemId) {
+          var item = dataSource[itemId];
+          if (item) {
+            return me.jsonResponse(item);
+          }
+          return me.jsonErrorResponse(404, 'Not Found');
         }
-        return me.jsonErrorResponse(404, 'Not Found');
-      }
-
-      return me.jsonErrorResponse(400, 'Bad Request');
+      });
     });
 
-    $httpBackend.whenPOST(new RegExp(baseUrlRe))
-    .respond(function(/*method, rawUrl, data, headers*/) {
-      return me.jsonErrorResponse(400, 'Bad Request');
+    $httpBackend.whenPOST(new RegExp(this.baseUrlRe))
+    .respond(function(method, rawUrl, data, headers) {
+      return me.handle(rawUrl, data, headers, {
+      });
     });
 
-    $httpBackend.whenPUT(new RegExp(baseUrlRe))
-    .respond(function(method, rawUrl/*, data, headers*/) {
-      var url = purl(rawUrl);
-
-      var match = baseUrlRe.exec(url.attr('path'));
-      if (match && /^[\w\-]+$/.test(match[1])) {
-        var item = dataSource[match[1]];
-        if (item) {
-          // something
+    $httpBackend.whenPUT(new RegExp(this.baseUrlRe))
+    .respond(function(method, rawUrl, data, headers) {
+      return me.handle(rawUrl, data, headers, {
+        atItem: function(itemId) {
+          var item = dataSource[itemId];
+          if (item) {
+            // Do something
+          }
+          return me.jsonErrorResponse(404, 'Not Found');
         }
-        return me.jsonErrorResponse(404, 'Not Found');
-      }
-
-      return me.jsonErrorResponse(400, 'Bad Request');
+      });
     });
 
-    $httpBackend.whenDELETE(new RegExp(baseUrlRe))
-    .respond(function(method, rawUrl/*, data, headers*/) {
-      var url = purl(rawUrl);
-
-      var match = baseUrlRe.exec(url.attr('path'));
-      if (match && /^[\w\-]+$/.test(match[1])) {
-        var item = dataSource[match[1]];
-        if (item) {
-          // something
+    $httpBackend.whenDELETE(new RegExp(this.baseUrlRe))
+    .respond(function(method, rawUrl, data, headers) {
+      return me.handle(rawUrl, data, headers, {
+        atItem: function(itemId) {
+          var item = dataSource[itemId];
+          if (item) {
+            // Do something
+          }
+          return me.jsonErrorResponse(404, 'Not Found');
         }
-        return me.jsonErrorResponse(404, 'Not Found');
-      }
-
-      return me.jsonErrorResponse(400, 'Bad Request');
+      });
     });
   };
 
   ResourceMock.prototype = {
+    handle: function(rawUrl, data, headers, handlers) {
+      var url = purl(rawUrl);
+
+      if (handlers.atRoot && url.attr('path') === this.baseUrl) {
+        return handlers.atRoot(url, data, headers);
+      }
+
+      if (handlers.atItem) {
+        var match = this.baseUrlRe.exec(url.attr('path'));
+        if (match && /^[\w\-]+$/.test(match[1])) {
+          return handlers.atItem(match[1], url, data, headers);
+        }
+      }
+
+      return this.jsonErrorResponse(400, 'Bad Request');
+    },
+
     jsonResponse: function(data, code) {
       code = code || 200;
       return [
