@@ -31,6 +31,12 @@ function($httpBackend) {
     $httpBackend.whenPOST(new RegExp(this.baseUrlRe))
     .respond(function(method, rawUrl, data, headers) {
       return me.handle(rawUrl, data, headers, {
+        atRoot: function() {
+          var newItem = JSON.parse(data);
+          newItem.id = Math.round(Math.random()*Math.pow(2, 32)).toString();
+          dataSource[newItem.id] = newItem;
+          return me.jsonResponse(newItem);
+        }
       });
     });
 

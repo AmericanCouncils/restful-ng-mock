@@ -72,14 +72,31 @@ describe('restfulNgMock', function () {
         expect(result.data).toEqual(books);
       });
 
-      it('can return a single item by id', function () {
+      it('returns a single item by id', function () {
         grabHttpResult($http.get('/books/2'));
         $httpBackend.flush();
         expect(result.status).toEqual(200);
         expect(result.data).toEqual(books['2']);
       });
 
-      it('can update an item', function () {
+      it('creates an item', function () {
+        grabHttpResult($http.post('/books', {
+          title: 'Godel, Escher, Bach',
+          author: 'Douglas Hofstadter'
+        }));
+        $httpBackend.flush();
+        expect(result.status).toEqual(200);
+        expect(result.data.title).toEqual('Godel, Escher, Bach');
+        expect(result.data.author).toEqual('Douglas Hofstadter');
+        var newId = String(result.data.id);
+        console.log(newId);
+        expect(newId.length).toBeGreaterThan(0);
+        expect(newId).not.toEqual('1');
+        expect(newId).not.toEqual('2');
+        expect(newId).not.toEqual('3');
+      });
+
+      it('updates an item', function () {
         grabHttpResult($http.put('/books/2', {
           title: 'Diamond Age',
           author: 'Neal Stephensen'
@@ -87,11 +104,10 @@ describe('restfulNgMock', function () {
         $httpBackend.flush();
         expect(result.data.title).toEqual('Diamond Age');
         expect(result.data.id).toEqual('2');
-        expect(books['2'].title).toEqual('Diamond Age');
-        expect(books['2'].id).toEqual('2');
+        expect(result.data).toEqual(books['2']);
       });
 
-      it('can delete an item', function () {
+      it('deletes an item', function () {
         grabHttpResult($http.delete('/books/2'));
         $httpBackend.flush();
         expect(books[2]).not.toBeDefined();
