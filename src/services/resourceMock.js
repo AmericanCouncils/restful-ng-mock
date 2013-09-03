@@ -24,7 +24,24 @@ function($httpBackend) {
   };
 
   var ResourceMock = function (baseUrl, dataSource) {
-    // Execute callbacks for a given url
+    var me = this;
+
+    if (!(/^\/[\w\-]+(\/[\w\-]+|\/\?)*$/).test(baseUrl)) {
+      throw 'Invalid baseUrl for resourceMock: "' + baseUrl + '".';
+    }
+    this.baseUrl = baseUrl;
+    this.dataSource = dataSource;
+
+    var requiredSegments = 0;
+    for (var cidx = 0; cidx < baseUrl.length; ++cidx) {
+      if (baseUrl.charAt(cidx) === '?') { ++requiredSegments; }
+    }
+
+    var urlPattern = baseUrl
+      .replace('/', '\\/', 'g')
+      .replace('?', '([\\w\\-]+)');
+    var baseUrlRe = new RegExp( '^' + urlPattern  + '(?:/([\\w\\-]+))?$');
+
     var handle = function(rawUrl, data, headers, handlers) {
       var url = purl(rawUrl);
       var matches = baseUrlRe.exec(url.attr('path')).slice(1);
@@ -38,22 +55,59 @@ function($httpBackend) {
       var result;
 
       if (handlers.atRoot && itemIds.length === requiredSegments) {
-        result = handlers.atRoot(itemIds, url, data, headers);
-        if (result) { return result; }
+        result = handlers.atRoot.call(me, itemIds, url, data, headers);
       } else if (handlers.atItem && itemIds.length > requiredSegments) {
         var superIds = itemIds.slice(0, -1);
         var itemId = itemIds[itemIds.length-1];
-        result = handlers.atItem(superIds, itemId, url, data, headers);
-        if (result) { return result; }
+        result = handlers.atItem.call(me, superIds, itemId, url, data, headers);
       }
 
-      return buildJsonErrorResponse(404, 'Not Found');
+      if (result) {
+        return buildJsonResponse(result);
+      } else {
+        return buildJsonErrorResponse(404, 'Not Found');
+      }
     };
 
+    $httpBackend.whenGET(new RegExp(baseUrlRe))
+    .respond(function(method, rawUrl, data, headers) {
+      return handle(rawUrl, data, headers, {
+        atRoot: me.indexAction,
+        atItem: me.showAction
+      });
+    });
+
+    $httpBackend.whenPOST(new RegExp(baseUrlRe))
+    .respond(function(method, rawUrl, data, headers) {
+      return handle(rawUrl, data, headers, {
+        atRoot: me.createAction
+      });
+    });
+
+    $httpBackend.whenPUT(new RegExp(baseUrlRe))
+    .respond(function(method, rawUrl, data, headers) {
+      return handle(rawUrl, data, headers, {
+        atItem: me.updateAction
+      });
+    });
+
+    $httpBackend.whenDELETE(new RegExp(baseUrlRe))
+    .respond(function(method, rawUrl, data, headers) {
+      return handle(rawUrl, data, headers, {
+        atItem: me.deleteAction
+      });
+    });
+  };
+
+  ResourceMock.prototype = {
+    subResourceMock: function(subUrl, subDataSource) {
+      return new ResourceMock(this.baseUrl + '/?' + subUrl, subDataSource);
+    },
+
     // Returns the object used for storing mock resource items
-    var getStorage = function(ids, autoCreate) {
+    getStorage: function(ids, autoCreate) {
       autoCreate = autoCreate || false;
-      var d = dataSource;
+      var d = this.dataSource;
       for (var i = 0; i < ids.length; ++i) {
         if (d[ids[i]]) {
           d = d[ids[i]];
@@ -67,87 +121,41 @@ function($httpBackend) {
         }
       }
       return d || null;
-    };
-
-    // ***
-    // *** ResourceMock init begins here
-    // ***
-
-    if (!(/^\/[\w\-]+(\/[\w\-]+|\/\?)*$/).test(baseUrl)) {
-      throw 'Invalid baseUrl for resourceMock: "' + baseUrl + '".';
-    }
-    this.baseUrl = baseUrl;
-
-    var requiredSegments = 0;
-    for (var cidx = 0; cidx < baseUrl.length; ++cidx) {
-      if (baseUrl.charAt(cidx) === '?') { ++requiredSegments; }
-    }
-
-    var urlPattern = baseUrl
-      .replace('/', '\\/', 'g')
-      .replace('?', '([\\w\\-]+)');
-    var baseUrlRe = new RegExp( '^' + urlPattern  + '(?:/([\\w\\-]+))?$');
-
-    $httpBackend.whenGET(new RegExp(baseUrlRe))
-    .respond(function(method, rawUrl, data, headers) {
-      return handle(rawUrl, data, headers, {
-        atRoot: function(ids) {
-          var storage = getStorage(ids);
-          if (storage) { return buildJsonResponse(storage); }
-        },
-        atItem: function(superIds, itemId) {
-          var storage = getStorage(superIds);
-          if (storage && storage[itemId]) {
-            return buildJsonResponse(storage[itemId]);
-          }
-        }
-      });
-    });
-
-    $httpBackend.whenPOST(new RegExp(baseUrlRe))
-    .respond(function(method, rawUrl, data, headers) {
-      return handle(rawUrl, data, headers, {
-        atRoot: function(ids) {
-          var newItem = JSON.parse(data);
-          newItem.id = Math.round(Math.random()*Math.pow(2, 32)).toString();
-          getStorage(ids, true)[newItem.id] = newItem;
-          return buildJsonResponse(newItem);
-        }
-      });
-    });
-
-    $httpBackend.whenPUT(new RegExp(baseUrlRe))
-    .respond(function(method, rawUrl, data, headers) {
-      return handle(rawUrl, data, headers, {
-        atItem: function(superIds, itemId) {
-          var storage = getStorage(superIds);
-          if (storage && storage[itemId]) {
-            var newItem = JSON.parse(data);
-            newItem.id = itemId;
-            storage[itemId] = newItem;
-            return buildJsonResponse(newItem);
-          }
-        }
-      });
-    });
-
-    $httpBackend.whenDELETE(new RegExp(baseUrlRe))
-    .respond(function(method, rawUrl, data, headers) {
-      return handle(rawUrl, data, headers, {
-        atItem: function(superIds, itemId) {
-          var storage = getStorage(superIds);
-          if (storage && storage[itemId]) {
-            delete storage[itemId];
-          }
-        }
-      });
-    });
-  };
-
-  ResourceMock.prototype = {
-    subResourceMock: function(subUrl, subDataSource) {
-      return new ResourceMock(this.baseUrl + '/?' + subUrl, subDataSource);
     },
+
+    indexAction: function(ids) {
+      var storage = this.getStorage(ids);
+      if (storage) { return storage; }
+    },
+
+    showAction: function(superIds, itemId) {
+      var storage = this.getStorage(superIds);
+      if (storage && storage[itemId]) { return storage[itemId]; }
+    },
+
+    createAction: function(ids, url, data) {
+      var newItem = JSON.parse(data);
+      newItem.id = Math.round(Math.random()*Math.pow(2, 32)).toString();
+      this.getStorage(ids, true)[newItem.id] = newItem;
+      return newItem;
+    },
+
+    updateAction: function(superIds, itemId, url, data) {
+      var storage = this.getStorage(superIds);
+      if (storage && storage[itemId]) {
+        var newItem = JSON.parse(data);
+        newItem.id = itemId;
+        storage[itemId] = newItem;
+        return newItem;
+      }
+    },
+
+    deleteAction: function(superIds, itemId) {
+      var storage = this.getStorage(superIds);
+      if (storage && storage[itemId]) {
+        delete storage[itemId];
+      }
+    }
   };
 
   var ResourceMockFactory = function(baseUrl, dataSource) {

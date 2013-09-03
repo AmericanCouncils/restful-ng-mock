@@ -243,6 +243,7 @@ describe('resourceMock', function () {
       grabHttpResult($http.delete('/stores/b/foods/3'));
       $httpBackend.flush();
       expect(foods['b']['3']).not.toBeDefined();
+      // TODO: Check that deleted item was returned
 
       grabHttpResult($http.get('/stores/b/foods/3'));
       $httpBackend.flush()
