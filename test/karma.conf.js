@@ -3,6 +3,7 @@ files = [
     JASMINE_ADAPTER,
     '../lib/angular.js',
     'lib/angular/angular-mocks.js',
+    '../bower_components/purl/purl.js',
     '../build/restful-ng-mock.debug.js',
     'unit/*Spec.js'
 ];

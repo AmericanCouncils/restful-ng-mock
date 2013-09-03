@@ -78,7 +78,6 @@ module.exports = function (grunt) {
         srcFiles: [
             'src/namespace.js',
             'src/services/*.js',
-            'src/httpInterceptor.js',
         ],
         karma: {
             unit: {

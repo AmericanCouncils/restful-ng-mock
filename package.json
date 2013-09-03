@@ -1,6 +1,6 @@
 {
   "name": "restful-ng-mock",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Mock up RESTful interfaces quickly with Angular's $httpBackend.",
   "main": "restful-ng-mock.min.js",
   "directories": {
@@ -21,6 +21,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "bower": "*",
     "grunt": "~0.4.1",
     "grunt-jsdoc": "~0.2.4",
     "grunt-karma": "~0.4.3",

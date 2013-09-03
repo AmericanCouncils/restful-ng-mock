@@ -22,6 +22,7 @@
   "white": false,
   "sub": true,
   "globals": {
-    "angular": false
+    "angular": false,
+    "purl": false
   }
 }
