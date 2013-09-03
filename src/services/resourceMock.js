@@ -24,7 +24,6 @@ function($httpBackend) {
           if (dataSource[itemId]) {
             return me.jsonResponse(dataSource[itemId]);
           }
-          return me.jsonErrorResponse(404, 'Not Found');
         }
       });
     });
@@ -43,7 +42,6 @@ function($httpBackend) {
           if (item) {
             // Do something
           }
-          return me.jsonErrorResponse(404, 'Not Found');
         }
       });
     });
@@ -55,7 +53,6 @@ function($httpBackend) {
           if (dataSource[itemId]) {
             delete dataSource[itemId];
           }
-          return me.jsonErrorResponse(404, 'Not Found');
         }
       });
     });
@@ -64,19 +61,22 @@ function($httpBackend) {
   ResourceMock.prototype = {
     handle: function(rawUrl, data, headers, handlers) {
       var url = purl(rawUrl);
+      var result;
 
       if (handlers.atRoot && url.attr('path') === this.baseUrl) {
-        return handlers.atRoot(url, data, headers);
+        result = handlers.atRoot(url, data, headers);
+        if (result) { return result; }
       }
 
       if (handlers.atItem) {
         var match = this.baseUrlRe.exec(url.attr('path'));
         if (match) {
-          return handlers.atItem(match[1], url, data, headers);
+          result = handlers.atItem(match[1], url, data, headers);
+          if (result) { return result; }
         }
       }
 
-      // TODO Throw here
+      return this.jsonErrorResponse(404, 'Not Found');
     },
 
     jsonResponse: function(data, code) {
