@@ -21,9 +21,8 @@ function($httpBackend) {
           return me.jsonResponse(dataSource);
         },
         atItem: function(itemId) {
-          var item = dataSource[itemId];
-          if (item) {
-            return me.jsonResponse(item);
+          if (dataSource[itemId]) {
+            return me.jsonResponse(dataSource[itemId]);
           }
           return me.jsonErrorResponse(404, 'Not Found');
         }
@@ -53,9 +52,8 @@ function($httpBackend) {
     .respond(function(method, rawUrl, data, headers) {
       return me.handle(rawUrl, data, headers, {
         atItem: function(itemId) {
-          var item = dataSource[itemId];
-          if (item) {
-            // Do something
+          if (dataSource[itemId]) {
+            delete dataSource[itemId];
           }
           return me.jsonErrorResponse(404, 'Not Found');
         }

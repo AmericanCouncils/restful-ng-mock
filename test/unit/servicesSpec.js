@@ -101,6 +101,16 @@ describe('restfulNgMock', function () {
           });
         }
       });
+
+      it('can delete an item by id', function () {
+        grabHttpResult($http.delete('/books/2'));
+        $httpBackend.flush();
+        expect(books[2]).not.toBeDefined();
+
+        grabHttpResult($http.get('/books/2'));
+        $httpBackend.flush()
+        expect(result.status).toEqual(404);
+      });
     });
   });
 });
