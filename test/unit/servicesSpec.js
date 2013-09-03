@@ -3,6 +3,8 @@
 describe('restfulNgMock', function () {
   beforeEach(module('restfulNgMock'));
 
+  var METHODS = ['GET', 'POST', 'PUT', 'DELETE'];
+
   describe('resourceMock', function () {
     var resourceMock;
     beforeEach(inject(function(_resourceMock_) {
@@ -80,8 +82,20 @@ describe('restfulNgMock', function () {
         expect(result.status).toEqual(404);
         expect(result.data).toEqual({
           code: 404,
-          message: "File not found"
+          message: "Not Found"
         });
+      });
+
+      it('returns a 400 error on invalid path on any HTTP method', function() {
+        for (var i = 0; i < METHODS.length; ++i) {
+          grabHttpResult($http[METHODS[i].toLowerCase()]('/books/foo/bar/baz'));
+          $httpBackend.flush();
+          expect(result.status).toEqual(400);
+          expect(result.data).toEqual({
+            code: 400,
+            message: "Bad Request"
+          });
+        }
       });
     });
   });

@@ -25,10 +25,26 @@ function($httpBackend) {
         var item = dataSource[match[1]];
         if (item) {
           return me.jsonResponse(item);
-        } else {
-          return me.jsonErrorResponse(404, 'File not found');
         }
+        return me.jsonErrorResponse(404, 'Not Found');
       }
+
+      return me.jsonErrorResponse(400, 'Bad Request');
+    });
+
+    $httpBackend.whenPOST(new RegExp(baseUrlRe))
+    .respond(function(/*method, rawUrl, data, headers*/) {
+      return me.jsonErrorResponse(400, 'Bad Request');
+    });
+
+    $httpBackend.whenPUT(new RegExp(baseUrlRe))
+    .respond(function(/*method, rawUrl, data, headers*/) {
+      return me.jsonErrorResponse(400, 'Bad Request');
+    });
+
+    $httpBackend.whenDELETE(new RegExp(baseUrlRe))
+    .respond(function(/*method, rawUrl, data, headers*/) {
+      return me.jsonErrorResponse(400, 'Bad Request');
     });
   };
 
