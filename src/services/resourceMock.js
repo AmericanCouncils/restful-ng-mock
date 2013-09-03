@@ -10,7 +10,7 @@ function($httpBackend) {
     }
 
     this.baseUrl = baseUrl;
-    this.baseUrlRe = new RegExp('^' + baseUrl.replace('/', '\\/', 'g') + '/?(.*)$');
+    this.baseUrlRe = new RegExp('^' + baseUrl.replace('/', '\\/', 'g') + '(?:/([\\w\\-]+))?$');
 
     var me = this;
 
@@ -71,12 +71,12 @@ function($httpBackend) {
 
       if (handlers.atItem) {
         var match = this.baseUrlRe.exec(url.attr('path'));
-        if (match && /^[\w\-]+$/.test(match[1])) {
+        if (match) {
           return handlers.atItem(match[1], url, data, headers);
         }
       }
 
-      return this.jsonErrorResponse(400, 'Bad Request');
+      // TODO Throw here
     },
 
     jsonResponse: function(data, code) {

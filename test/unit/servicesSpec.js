@@ -90,18 +90,6 @@ describe('restfulNgMock', function () {
         }
       });
 
-      it('returns a 400 error on invalid path on any HTTP method', function() {
-        for (var i = 0; i < METHODS.length; ++i) {
-          grabHttpResult($http[METHODS[i].toLowerCase()]('/books/foo/bar/baz'));
-          $httpBackend.flush();
-          expect(result.status).toEqual(400);
-          expect(result.data).toEqual({
-            code: 400,
-            message: "Bad Request"
-          });
-        }
-      });
-
       it('can delete an item by id', function () {
         grabHttpResult($http.delete('/books/2'));
         $httpBackend.flush();
