@@ -25,20 +25,31 @@ function($httpBackend) {
         var item = dataSource[match[1]];
         if (item) {
           return me.jsonResponse(item);
+        } else {
+          return me.jsonErrorResponse(404, 'File not found');
         }
       }
     });
   };
 
   ResourceMock.prototype = {
-    jsonResponse: function(data) {
+    jsonResponse: function(data, code) {
+      code = code || 200;
       return [
-        200,
+        code,
         JSON.stringify(data),
         {
           'Content-Type': 'application/json'
         }
       ];
+    },
+
+    jsonErrorResponse: function(code, message) {
+      var data = {
+        code: code,
+        message: message
+      };
+      return this.jsonResponse(data, code);
     }
   };
 

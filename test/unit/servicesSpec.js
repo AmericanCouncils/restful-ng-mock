@@ -73,6 +73,16 @@ describe('restfulNgMock', function () {
         expect(result.status).toEqual(200);
         expect(result.data).toEqual(books['2']);
       });
+
+      it('returns a 404 error if id not found', function () {
+        grabHttpResult($http.get('/books/22'));
+        $httpBackend.flush();
+        expect(result.status).toEqual(404);
+        expect(result.data).toEqual({
+          code: 404,
+          message: "File not found"
+        });
+      });
     });
   });
 });
