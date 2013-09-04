@@ -33,13 +33,13 @@ describe('resourceMock', function () {
 
     it('fails when given template URL with closing slash', function () {
       expect(function() {
-        resourceMock("/foo/"); // Shouldn't end with a slash
+        resourceMock("/foo/");
       }).toThrow();
     });
 
     it('fails when given template URL with invalid character', function () {
       expect(function() {
-        resourceMock("/fo&o"); // Invalid character
+        resourceMock("/fo&o");
       }).toThrow();
     });
   });

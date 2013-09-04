@@ -4,23 +4,30 @@ angular.module('restfulNgMock')
 .factory('resourceMock', [
 '$httpBackend',
 function($httpBackend) {
-  var buildJsonResponse = function(data, code) {
-    code = code || 200;
+  var HttpError = function(code, message) {
+    this.code = code;
+    this.message = message;
+  };
+
+  var buildResponse = function(data) {
+    if (angular.isUndefined(data)) {
+      data = new HttpError(404, 'Not Found');
+    }
+
+    var code = 200;
+    if (data instanceof HttpError) {
+      code = data.code;
+      data = {
+        code: data.code,
+        message: data.message
+      };
+    }
+
     return [
       code,
       JSON.stringify(data),
-      {
-        'Content-Type': 'application/json'
-      }
+      { 'Content-Type': 'application/json' }
     ];
-  };
-
-  var buildJsonErrorResponse = function(code, message) {
-    var data = {
-      code: code,
-      message: message
-    };
-    return buildJsonResponse(data, code);
   };
 
   var ResourceMock = function (baseUrl, dataSource) {
@@ -52,20 +59,19 @@ function($httpBackend) {
         }
       }
 
-      var result;
-
       if (handlers.atRoot && itemIds.length === requiredSegments) {
-        result = handlers.atRoot.call(me, itemIds, url, data, headers);
+        return buildResponse(
+          handlers.atRoot.call(me, itemIds, url, data, headers)
+        );
       } else if (handlers.atItem && itemIds.length > requiredSegments) {
         var superIds = itemIds.slice(0, -1);
         var itemId = itemIds[itemIds.length-1];
-        result = handlers.atItem.call(me, superIds, itemId, url, data, headers);
-      }
-
-      if (result) {
-        return buildJsonResponse(result);
+        return buildResponse(
+          handlers.atItem.call(me, superIds, itemId, url, data, headers)
+        );
       } else {
-        return buildJsonErrorResponse(404, 'Not Found');
+        // This action isn't handled
+        return buildResponse( new HttpError(400, 'Bad Request') );
       }
     };
 
