@@ -161,7 +161,15 @@ function($httpBackend) {
 
     indexAction: function(ids) {
       var storage = this.getStorage(ids);
-      if (storage) { return storage; }
+      if (storage) {
+        var a = [];
+        for (var k in storage) {
+          if (storage.hasOwnProperty(k)) {
+            a.push(storage[k]);
+          }
+        }
+        return a;
+      }
     },
 
     showAction: function(superIds, itemId) {

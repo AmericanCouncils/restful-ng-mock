@@ -24,6 +24,12 @@ describe('resourceMock', function () {
     h.success(grab).error(grab);
   }
 
+  function objToArray(obj) {
+    var a = [];
+    for (var k in obj) { a.push(obj[k]); }
+    return a;
+  }
+
   describe('when used incorrectly', function () {
     it('fails when given template URL without starting slash', function () {
       expect(function() {
@@ -74,7 +80,7 @@ describe('resourceMock', function () {
       grabHttpResult($http.get('/books'));
       $httpBackend.flush();
       expect(result.status).toEqual(200);
-      expect(result.data).toEqual(books);
+      expect(result.data).toEqual(objToArray(books));
     });
 
     it('returns a single item by id', function () {
@@ -148,8 +154,7 @@ describe('resourceMock', function () {
       it('encapsulates index results', function () {
         grabHttpResult($http.get('/books'));
         $httpBackend.flush();
-        console.log(result.data);
-        expect(result.data.books).toEqual(books);
+        expect(result.data.books).toEqual(objToArray(books));
       });
 
       it('encapsulates show results', function () {
@@ -221,7 +226,7 @@ describe('resourceMock', function () {
       grabHttpResult($http.get('/stores/b/foods'));
       $httpBackend.flush();
       expect(result.status).toEqual(200);
-      expect(result.data).toEqual(foods['b']);
+      expect(result.data).toEqual(objToArray(foods['b']));
     });
 
     it('returns a single subitem by id', function () {
