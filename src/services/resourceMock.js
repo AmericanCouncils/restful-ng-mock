@@ -9,30 +9,10 @@ function($httpBackend) {
     this.message = message;
   };
 
-  var buildResponse = function(data) {
-    if (angular.isUndefined(data)) {
-      data = new HttpError(404, 'Not Found');
-    }
-
-    var code = 200;
-    if (data instanceof HttpError) {
-      code = data.code;
-      data = {
-        code: data.code,
-        message: data.message
-      };
-    }
-
-    return [
-      code,
-      JSON.stringify(data),
-      { 'Content-Type': 'application/json' }
-    ];
-  };
-
   var DEFAULT_OPTIONS = {
     collectionLabel: false,
-    singletonLabel: false
+    singletonLabel: false,
+    httpResponseInfoLabel: false
   };
 
   var ResourceMock = function (baseUrl, dataSource, options) {
@@ -56,6 +36,34 @@ function($httpBackend) {
     var baseUrlRe = new RegExp( '^' + urlPattern  + '(?:/([\\w\\-]+))?$');
 
     var me = this;
+
+    var buildResponse = function(data) {
+      if (angular.isUndefined(data)) {
+        data = new HttpError(404, 'Not Found');
+      }
+
+      var responseInfo = { code: 200, message: 'OK' };
+      if (data instanceof HttpError) {
+        responseInfo.code = data.code;
+        responseInfo.message = data.message;
+        if (me.options.httpResponseInfoLabel) {
+          data = {};
+        } else {
+          data = responseInfo;
+        }
+      }
+
+      if (me.options.httpResponseInfoLabel) {
+        data[me.options.httpResponseInfoLabel] = responseInfo;
+      }
+
+      return [
+        responseInfo.code,
+        JSON.stringify(data),
+        { 'Content-Type': 'application/json' }
+      ];
+    };
+
     var handle = function(rawUrl, data, headers, handlers) {
       var url = purl(rawUrl);
       var matches = baseUrlRe.exec(url.attr('path')).slice(1);
@@ -71,7 +79,7 @@ function($httpBackend) {
         response =
           handlers.atRoot.call(me, itemIds, url, data, headers);
 
-        if (me.options.collectionLabel) {
+        if (response && me.options.collectionLabel) {
           encapResponse = response;
           response = {};
           response[me.options.collectionLabel] = encapResponse;
@@ -83,7 +91,7 @@ function($httpBackend) {
         response =
           handlers.atItem.call(me, superIds, itemId, url, data, headers);
 
-        if (me.options.singletonLabel) {
+        if (response && me.options.singletonLabel) {
           encapResponse = response;
           response = {};
           response[me.options.singletonLabel] = encapResponse;

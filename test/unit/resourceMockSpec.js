@@ -178,7 +178,62 @@ describe('resourceMock', function () {
         expect(books['2'].title).toEqual('Diamond Age');
       });
 
-      // TODO Check error response encapsulation
+      it('leaves http errors at the root of the response', function () {
+        grabHttpResult($http.get('/books/22'));
+        $httpBackend.flush();
+        expect(result.data).toEqual({
+          code: 404,
+          message: "Not Found"
+        });
+        expect(result.data.response).toBeUndefined();
+      });
+
+      describe('and encapsulated http response info', function () {
+        beforeEach(function() {
+          booksMock.setOptions({
+            httpResponseInfoLabel: 'response'
+          });
+        });
+
+        var ok = {code: 200, message: "OK"};
+
+        it('includes http response info with index results', function () {
+          grabHttpResult($http.get('/books'));
+          $httpBackend.flush();
+          expect(result.data).toEqual({
+            books: objToArray(books),
+            response: ok
+          });
+        });
+
+        it('includes http response info with show results', function () {
+          grabHttpResult($http.get('/books/2'));
+          $httpBackend.flush();
+          expect(result.data).toEqual({book: books['2'], response: ok});
+        });
+
+        it('includes http response info with singleton action results', function () {
+          grabHttpResult($http.put('/books/2', {
+            title: 'Diamond Age',
+            author: 'Neal Stephensen'
+          }));
+          $httpBackend.flush();
+          expect(result.data.book).toEqual(books['2']);
+          expect(books['2'].title).toEqual('Diamond Age');
+          expect(result.data.response).toEqual(ok);
+        });
+
+        it('encapsulates http errors', function () {
+          grabHttpResult($http.get('/books/22'));
+          $httpBackend.flush();
+          expect(result.data.code).toBeUndefined();
+          expect(result.data.message).toBeUndefined();
+          expect(result.data.response).toEqual({
+            code: 404,
+            message: "Not Found"
+          });
+        });
+      });
     });
   });
 
