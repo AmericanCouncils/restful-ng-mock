@@ -197,7 +197,9 @@ function($httpBackend) {
     deleteAction: function(superIds, itemId) {
       var storage = this.getStorage(superIds);
       if (storage && storage[itemId]) {
+        var item = storage[itemId];
         delete storage[itemId];
+        return item;
       }
     }
   };

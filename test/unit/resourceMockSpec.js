@@ -127,7 +127,7 @@ describe('resourceMock', function () {
       grabHttpResult($http.delete('/books/2'));
       $httpBackend.flush();
       expect(books[2]).not.toBeDefined();
-      // TODO: Check that deleted item was returned
+      expect(result.data.title).toEqual('Anathem');
 
       grabHttpResult($http.get('/books/2'));
       $httpBackend.flush()
@@ -290,7 +290,7 @@ describe('resourceMock', function () {
       grabHttpResult($http.delete('/stores/b/foods/3'));
       $httpBackend.flush();
       expect(foods['b']['3']).not.toBeDefined();
-      // TODO: Check that deleted item was returned
+      expect(result.data.name).toEqual('East Loop Pi');
 
       grabHttpResult($http.get('/stores/b/foods/3'));
       $httpBackend.flush()
