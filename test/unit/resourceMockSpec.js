@@ -49,7 +49,12 @@ describe('resourceMock', function () {
       }).toThrow();
     });
 
-    // TODO check invalid setOptions usage
+    it('fails when given invalid options to setOptions', function () {
+      var m = resourceMock("/foo");
+      expect(function() {
+        m.setOptions({noSuchOption: 123});
+      }).toThrow();
+    });
   });
 
   describe('with a simple resource', function () {
