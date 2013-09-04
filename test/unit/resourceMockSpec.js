@@ -42,6 +42,8 @@ describe('resourceMock', function () {
         resourceMock("/fo&o");
       }).toThrow();
     });
+
+    // TODO check invalid setOptions usage
   });
 
   describe('with a simple resource', function () {
@@ -114,6 +116,7 @@ describe('resourceMock', function () {
       grabHttpResult($http.delete('/books/2'));
       $httpBackend.flush();
       expect(books[2]).not.toBeDefined();
+      // TODO: Check that deleted item was returned
 
       grabHttpResult($http.get('/books/2'));
       $httpBackend.flush()
@@ -132,6 +135,40 @@ describe('resourceMock', function () {
           });
         }
       }
+    });
+
+    describe('with labelled responses', function () {
+      beforeEach(function() {
+        booksMock.setOptions({
+          collectionLabel: 'books',
+          singletonLabel: 'book'
+        });
+      });
+
+      it('encapsulates index results', function () {
+        grabHttpResult($http.get('/books'));
+        $httpBackend.flush();
+        console.log(result.data);
+        expect(result.data.books).toEqual(books);
+      });
+
+      it('encapsulates show results', function () {
+        grabHttpResult($http.get('/books/2'));
+        $httpBackend.flush();
+        expect(result.data.book).toEqual(books['2']);
+      });
+
+      it('encapsulates results from singleton actions', function () {
+        grabHttpResult($http.put('/books/2', {
+          title: 'Diamond Age',
+          author: 'Neal Stephensen'
+        }));
+        $httpBackend.flush();
+        expect(result.data.book).toEqual(books['2']);
+        expect(books['2'].title).toEqual('Diamond Age');
+      });
+
+      // TODO Check error response encapsulation
     });
   });
 

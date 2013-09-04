@@ -30,14 +30,20 @@ function($httpBackend) {
     ];
   };
 
-  var ResourceMock = function (baseUrl, dataSource) {
-    var me = this;
+  var DEFAULT_OPTIONS = {
+    collectionLabel: false,
+    singletonLabel: false
+  };
 
+  var ResourceMock = function (baseUrl, dataSource, options) {
     if (!(/^\/[\w\-]+(\/[\w\-]+|\/\?)*$/).test(baseUrl)) {
       throw 'Invalid baseUrl for resourceMock: "' + baseUrl + '".';
     }
     this.baseUrl = baseUrl;
     this.dataSource = dataSource;
+
+    this.options = angular.extend({}, DEFAULT_OPTIONS);
+    this.setOptions(options || {});
 
     var requiredSegments = 0;
     for (var cidx = 0; cidx < baseUrl.length; ++cidx) {
@@ -49,6 +55,7 @@ function($httpBackend) {
       .replace('?', '([\\w\\-]+)');
     var baseUrlRe = new RegExp( '^' + urlPattern  + '(?:/([\\w\\-]+))?$');
 
+    var me = this;
     var handle = function(rawUrl, data, headers, handlers) {
       var url = purl(rawUrl);
       var matches = baseUrlRe.exec(url.attr('path')).slice(1);
@@ -59,16 +66,29 @@ function($httpBackend) {
         }
       }
 
+      var response, encapResponse;
       if (handlers.atRoot && itemIds.length === requiredSegments) {
-        return buildResponse(
-          handlers.atRoot.call(me, itemIds, url, data, headers)
-        );
+        response =
+          handlers.atRoot.call(me, itemIds, url, data, headers);
+
+        if (me.options.collectionLabel) {
+          encapResponse = response;
+          response = {};
+          response[me.options.collectionLabel] = encapResponse;
+        }
+        return buildResponse(response);
       } else if (handlers.atItem && itemIds.length > requiredSegments) {
         var superIds = itemIds.slice(0, -1);
         var itemId = itemIds[itemIds.length-1];
-        return buildResponse(
-          handlers.atItem.call(me, superIds, itemId, url, data, headers)
-        );
+        response =
+          handlers.atItem.call(me, superIds, itemId, url, data, headers);
+
+        if (me.options.singletonLabel) {
+          encapResponse = response;
+          response = {};
+          response[me.options.singletonLabel] = encapResponse;
+        }
+        return buildResponse(response);
       } else {
         // This action isn't handled
         return buildResponse( new HttpError(400, 'Bad Request') );
@@ -127,6 +147,16 @@ function($httpBackend) {
         }
       }
       return d || null;
+    },
+
+    setOptions: function(opts) {
+      var me = this;
+      angular.forEach(opts, function(v, k) {
+        if (typeof DEFAULT_OPTIONS[k] === 'undefined') {
+          throw 'Invalid option key ' + k;
+        }
+        me.options[k] = v;
+      });
     },
 
     indexAction: function(ids) {
