@@ -21,7 +21,7 @@ module.exports = function (grunt) {
         src = src.replace(/\s{2,}(\r|\n|\s){2,}$/gm, '');
         return src;
     };
-    
+
     grunt.registerMultiTask('concat', 'Concatenate files.', function () {
         // Merge task-specific and/or target-specific options with these defaults.
         var options = this.options({

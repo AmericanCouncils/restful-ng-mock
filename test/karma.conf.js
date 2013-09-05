@@ -1,8 +1,8 @@
 files = [
     JASMINE,
     JASMINE_ADAPTER,
-    '../lib/angular.js',
-    'lib/angular/angular-mocks.js',
+    '../bower_components/angular/angular.js',
+    '../bower_components/angular-mocks/angular-mocks.js',
     '../bower_components/purl/purl.js',
     '../build/restful-ng-mock.debug.js',
     'unit/*Spec.js'

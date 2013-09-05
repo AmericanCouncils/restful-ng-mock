@@ -3,6 +3,11 @@
   "version": "0.0.2",
   "main": ["./build/restful-ng-mock.min.js"],
   "dependencies": {
-    "purl": "2.3.1"
+    "purl": "2.3.1",
+    "angular": "1.2.0-rc.1"
+  },
+  "devDependencies": {
+    "angular-mocks": "1.2.0-rc.1",
+    "jasmine": "1.2.0"
   }
 }
