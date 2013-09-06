@@ -33,7 +33,7 @@ function($httpBackend) {
     var urlPattern = baseUrl
       .replace('/', '\\/', 'g')
       .replace('?', '([\\w\\-]+)');
-    var baseUrlRe = new RegExp( '^' + urlPattern  + '(?:/([\\w\\-]+))?$');
+    var baseUrlRe = new RegExp( '^' + urlPattern  + '(?:/([\\w\\-]+))?(?:\\?.*)?$');
 
     var me = this;
 

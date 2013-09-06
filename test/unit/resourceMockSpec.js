@@ -95,6 +95,13 @@ describe('resourceMock', function () {
       expect(result.data).toEqual(books['2']);
     });
 
+    it('is not confused by URL query parameters', function () {
+      grabHttpResult($http.get('/books/2?foo=bar'));
+      $httpBackend.flush();
+      expect(result.status).toEqual(200);
+      expect(result.data).toEqual(books['2']);
+    });
+
     it('creates an item', function () {
       grabHttpResult($http.post('/books', {
         title: 'Godel, Escher, Bach',
