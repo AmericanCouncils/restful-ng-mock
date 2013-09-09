@@ -2,7 +2,7 @@
 * restful-ng-mock JavaScript Library
 * https://github.com/AmericanCouncils/restful-ng-mock/ 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 09/06/2013 13:41
+* Compiled At: 09/09/2013 16:15
 ***********************************************/
 (function(window) {
 'use strict';
@@ -22,7 +22,9 @@ function($httpBackend) {
   var DEFAULT_OPTIONS = {
     collectionLabel: false,
     singletonLabel: false,
-    httpResponseInfoLabel: false
+    httpResponseInfoLabel: false,
+    skipArgumentName: false,
+    limitArgumentName: false
   };
 
   var ResourceMock = function (baseUrl, dataSource, options) {
@@ -177,15 +179,36 @@ function($httpBackend) {
       });
     },
 
-    indexAction: function(ids) {
+    indexAction: function(ids, url) {
       var storage = this.getStorage(ids);
+
       if (storage) {
-        var a = [];
-        for (var k in storage) {
-          if (storage.hasOwnProperty(k)) {
-            a.push(storage[k]);
+
+        var keys = [];
+        angular.forEach(storage, function(v, k) {
+          if (/^\d+$/.test(k)) {
+            k = parseInt(k, 10);
+          }
+          keys.push(k);
+        });
+        keys.sort();
+
+        if (this.options['skipArgumentName']) {
+          var skip = parseInt(url.param(this.options['skipArgumentName']), 10);
+          if (skip) {
+            keys = keys.slice(skip);
           }
         }
+
+        if (this.options['limitArgumentName']) {
+          var lim = parseInt(url.param(this.options['limitArgumentName']), 10);
+          if (lim) {
+            keys = keys.slice(0, lim);
+          }
+        }
+
+        var a = [];
+        angular.forEach(keys, function(k) { a.push(storage[k]); });
         return a;
       }
     },
@@ -197,7 +220,7 @@ function($httpBackend) {
 
     createAction: function(ids, url, data) {
       var newItem = JSON.parse(data);
-      newItem.id = Math.round(Math.random()*Math.pow(2, 32)).toString();
+      newItem.id = Math.round(Math.random()*Math.pow(2, 32));
       this.getStorage(ids, true)[newItem.id] = newItem;
       return newItem;
     },
@@ -206,7 +229,7 @@ function($httpBackend) {
       var storage = this.getStorage(superIds);
       if (storage && storage[itemId]) {
         var newItem = JSON.parse(data);
-        newItem.id = itemId;
+        newItem.id = storage[itemId].id;
         storage[itemId] = newItem;
         return newItem;
       }
