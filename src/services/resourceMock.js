@@ -12,7 +12,9 @@ function($httpBackend) {
   var DEFAULT_OPTIONS = {
     collectionLabel: false,
     singletonLabel: false,
-    httpResponseInfoLabel: false
+    httpResponseInfoLabel: false,
+    skipArgument: false,
+    limitArgument: false
   };
 
   var ResourceMock = function (baseUrl, dataSource, options) {
@@ -167,13 +169,32 @@ function($httpBackend) {
       });
     },
 
-    indexAction: function(ids) {
+    indexAction: function(ids, url) {
       var storage = this.getStorage(ids);
+
       if (storage) {
+        var skip = 0;
+        if (this.options['skipArgument']) {
+          skip = parseInt(url.param(this.options['skipArgument']), 10) || skip;
+        }
+
+        var limit = false;
+        if (this.options['limitArgument']) {
+          limit = parseInt(url.param(this.options['limitArgument']), 10) || limit;
+        }
+
         var a = [];
         for (var k in storage) {
           if (storage.hasOwnProperty(k)) {
-            a.push(storage[k]);
+            if (limit !== false && a.length === limit) {
+              break;
+            }
+
+            if (skip > 0) {
+              --skip;
+            } else {
+              a.push(storage[k]);
+            }
           }
         }
         return a;

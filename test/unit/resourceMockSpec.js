@@ -22,6 +22,7 @@ describe('resourceMock', function () {
       result.config = c;
     };
     h.success(grab).error(grab);
+    $httpBackend.flush();
   }
 
   function objToArray(obj) {
@@ -83,21 +84,18 @@ describe('resourceMock', function () {
 
     it('returns the full list on a simple get', function () {
       grabHttpResult($http.get('/books'));
-      $httpBackend.flush();
       expect(result.status).toEqual(200);
       expect(result.data).toEqual(objToArray(books));
     });
 
     it('returns a single item by id', function () {
       grabHttpResult($http.get('/books/2'));
-      $httpBackend.flush();
       expect(result.status).toEqual(200);
       expect(result.data).toEqual(books['2']);
     });
 
     it('is not confused by URL query parameters', function () {
       grabHttpResult($http.get('/books/2?foo=bar'));
-      $httpBackend.flush();
       expect(result.status).toEqual(200);
       expect(result.data).toEqual(books['2']);
     });
@@ -107,7 +105,6 @@ describe('resourceMock', function () {
         title: 'Godel, Escher, Bach',
         author: 'Douglas Hofstadter'
       }));
-      $httpBackend.flush();
       expect(result.status).toEqual(200);
       expect(result.data.title).toEqual('Godel, Escher, Bach');
       expect(result.data.author).toEqual('Douglas Hofstadter');
@@ -124,7 +121,6 @@ describe('resourceMock', function () {
         title: 'Diamond Age',
         author: 'Neal Stephensen'
       }));
-      $httpBackend.flush();
       expect(result.data.title).toEqual('Diamond Age');
       expect(result.data.id).toEqual('2');
       expect(result.data).toEqual(books['2']);
@@ -132,12 +128,10 @@ describe('resourceMock', function () {
 
     it('deletes an item', function () {
       grabHttpResult($http.delete('/books/2'));
-      $httpBackend.flush();
       expect(books[2]).not.toBeDefined();
       expect(result.data.title).toEqual('Anathem');
 
       grabHttpResult($http.get('/books/2'));
-      $httpBackend.flush()
       expect(result.status).toEqual(404);
     });
 
@@ -145,7 +139,6 @@ describe('resourceMock', function () {
       for (var i = 0; i < METHODS.length; ++i) {
         if (METHODS[i] != 'POST') {
           grabHttpResult($http[METHODS[i].toLowerCase()]('/books/22'));
-          $httpBackend.flush();
           expect(result.status).toEqual(404);
           expect(result.data).toEqual({
             code: 404,
@@ -165,13 +158,11 @@ describe('resourceMock', function () {
 
       it('encapsulates index results', function () {
         grabHttpResult($http.get('/books'));
-        $httpBackend.flush();
         expect(result.data.books).toEqual(objToArray(books));
       });
 
       it('encapsulates show results', function () {
         grabHttpResult($http.get('/books/2'));
-        $httpBackend.flush();
         expect(result.data.book).toEqual(books['2']);
       });
 
@@ -180,14 +171,12 @@ describe('resourceMock', function () {
           title: 'Diamond Age',
           author: 'Neal Stephensen'
         }));
-        $httpBackend.flush();
         expect(result.data.book).toEqual(books['2']);
         expect(books['2'].title).toEqual('Diamond Age');
       });
 
       it('leaves http errors at the root of the response', function () {
         grabHttpResult($http.get('/books/22'));
-        $httpBackend.flush();
         expect(result.data).toEqual({
           code: 404,
           message: "Not Found"
@@ -206,7 +195,6 @@ describe('resourceMock', function () {
 
         it('includes http response info with index results', function () {
           grabHttpResult($http.get('/books'));
-          $httpBackend.flush();
           expect(result.data).toEqual({
             books: objToArray(books),
             response: ok
@@ -215,7 +203,6 @@ describe('resourceMock', function () {
 
         it('includes http response info with show results', function () {
           grabHttpResult($http.get('/books/2'));
-          $httpBackend.flush();
           expect(result.data).toEqual({book: books['2'], response: ok});
         });
 
@@ -224,7 +211,6 @@ describe('resourceMock', function () {
             title: 'Diamond Age',
             author: 'Neal Stephensen'
           }));
-          $httpBackend.flush();
           expect(result.data.book).toEqual(books['2']);
           expect(books['2'].title).toEqual('Diamond Age');
           expect(result.data.response).toEqual(ok);
@@ -232,7 +218,6 @@ describe('resourceMock', function () {
 
         it('encapsulates http errors', function () {
           grabHttpResult($http.get('/books/22'));
-          $httpBackend.flush();
           expect(result.data.code).toBeUndefined();
           expect(result.data.message).toBeUndefined();
           expect(result.data.response).toEqual({
@@ -240,6 +225,30 @@ describe('resourceMock', function () {
             message: "Not Found"
           });
         });
+      });
+    });
+
+    describe('with pagination support', function () {
+      beforeEach(function() {
+        booksMock.setOptions({
+          skipArgument: "skip",
+          limitArgument: "limit"
+        });
+      });
+
+      it('skips the first N results', function () {
+        grabHttpResult($http.get('/books?skip=2'));
+        expect(result.data).toEqual([books['3']]);
+      });
+
+      it('limits to N results', function () {
+        grabHttpResult($http.get('/books?limit=2'));
+        expect(result.data).toEqual([books['1'], books['2']]);
+      });
+
+      it('skips and limits together to allow pagination', function () {
+        grabHttpResult($http.get('/books?skip=1&limit=1'));
+        expect(result.data).toEqual([books['2']]);
       });
     });
   });
@@ -291,14 +300,12 @@ describe('resourceMock', function () {
 
     it('returns the full list of subresources on a simple get', function () {
       grabHttpResult($http.get('/stores/b/foods'));
-      $httpBackend.flush();
       expect(result.status).toEqual(200);
       expect(result.data).toEqual(objToArray(foods['b']));
     });
 
     it('returns a single subitem by id', function () {
       grabHttpResult($http.get('/stores/b/foods/3'));
-      $httpBackend.flush();
       expect(result.status).toEqual(200);
       expect(result.data).toEqual(foods['b']['3']);
     });
@@ -307,7 +314,6 @@ describe('resourceMock', function () {
       grabHttpResult($http.post('/stores/b/foods', {
         name: 'Grove Pi'
       }));
-      $httpBackend.flush();
       expect(result.status).toEqual(200);
       expect(result.data.name).toEqual('Grove Pi');
       var newId = String(result.data.id);
@@ -326,14 +332,12 @@ describe('resourceMock', function () {
       grabHttpResult($http.post('/stores/x/foods', {
         name: 'Chicken-Fried Steak'
       }));
-      $httpBackend.flush();
       expect(result.status).toEqual(200);
       expect(result.data.name).toEqual('Chicken-Fried Steak');
       var newId = String(result.data.id);
       expect(result.data).toEqual(foods['x'][newId]);
 
       grabHttpResult($http.get('/stores/x/foods/' + newId));
-      $httpBackend.flush()
       expect(result.status).toEqual(200);
       expect(result.data.name).toEqual('Chicken-Fried Steak');
     });
@@ -342,7 +346,6 @@ describe('resourceMock', function () {
       grabHttpResult($http.put('/stores/b/foods/4', {
         name: 'Grove Pi'
       }));
-      $httpBackend.flush();
       expect(result.data.name).toEqual('Grove Pi');
       expect(result.data.id).toEqual('4');
       expect(result.data).toEqual(foods['b']['4']);
@@ -350,12 +353,10 @@ describe('resourceMock', function () {
 
     it('deletes a subitem', function () {
       grabHttpResult($http.delete('/stores/b/foods/3'));
-      $httpBackend.flush();
       expect(foods['b']['3']).not.toBeDefined();
       expect(result.data.name).toEqual('East Loop Pi');
 
       grabHttpResult($http.get('/stores/b/foods/3'));
-      $httpBackend.flush()
       expect(result.status).toEqual(404);
     });
 
@@ -363,7 +364,6 @@ describe('resourceMock', function () {
       for (var i = 0; i < METHODS.length; ++i) {
         if (METHODS[i] != 'POST') {
           grabHttpResult($http[METHODS[i].toLowerCase()]('/stores/b/foods/22'));
-          $httpBackend.flush();
           expect(result.status).toEqual(404);
           expect(result.data).toEqual({
             code: 404,
