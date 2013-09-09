@@ -13,8 +13,8 @@ function($httpBackend) {
     collectionLabel: false,
     singletonLabel: false,
     httpResponseInfoLabel: false,
-    skipArgument: false,
-    limitArgument: false
+    skipArgumentName: false,
+    limitArgumentName: false
   };
 
   var ResourceMock = function (baseUrl, dataSource, options) {
@@ -173,30 +173,32 @@ function($httpBackend) {
       var storage = this.getStorage(ids);
 
       if (storage) {
-        var skip = 0;
-        if (this.options['skipArgument']) {
-          skip = parseInt(url.param(this.options['skipArgument']), 10) || skip;
+
+        var keys = [];
+        angular.forEach(storage, function(v, k) {
+          if (/^\d+$/.test(k)) {
+            k = parseInt(k, 10);
+          }
+          keys.push(k);
+        });
+        keys.sort();
+
+        if (this.options['skipArgumentName']) {
+          var skip = parseInt(url.param(this.options['skipArgumentName']), 10);
+          if (skip) {
+            keys = keys.slice(skip);
+          }
         }
 
-        var limit = false;
-        if (this.options['limitArgument']) {
-          limit = parseInt(url.param(this.options['limitArgument']), 10) || limit;
+        if (this.options['limitArgumentName']) {
+          var lim = parseInt(url.param(this.options['limitArgumentName']), 10);
+          if (lim) {
+            keys = keys.slice(0, lim);
+          }
         }
 
         var a = [];
-        for (var k in storage) {
-          if (storage.hasOwnProperty(k)) {
-            if (limit !== false && a.length === limit) {
-              break;
-            }
-
-            if (skip > 0) {
-              --skip;
-            } else {
-              a.push(storage[k]);
-            }
-          }
-        }
+        angular.forEach(keys, function(k) { a.push(storage[k]); });
         return a;
       }
     },
@@ -208,7 +210,7 @@ function($httpBackend) {
 
     createAction: function(ids, url, data) {
       var newItem = JSON.parse(data);
-      newItem.id = Math.round(Math.random()*Math.pow(2, 32)).toString();
+      newItem.id = Math.round(Math.random()*Math.pow(2, 32));
       this.getStorage(ids, true)[newItem.id] = newItem;
       return newItem;
     },
@@ -217,7 +219,7 @@ function($httpBackend) {
       var storage = this.getStorage(superIds);
       if (storage && storage[itemId]) {
         var newItem = JSON.parse(data);
-        newItem.id = itemId;
+        newItem.id = storage[itemId].id;
         storage[itemId] = newItem;
         return newItem;
       }

@@ -27,7 +27,7 @@ describe('resourceMock', function () {
 
   function objToArray(obj) {
     var a = [];
-    for (var k in obj) { a.push(obj[k]); }
+    _(obj).keys().sort().each(function (k) { a.push(obj[k]); });
     return a;
   }
 
@@ -62,27 +62,27 @@ describe('resourceMock', function () {
     var books, booksMock;
     beforeEach(function() {
       books = {
-        '1' : {
-          id: '1',
+        1 : {
+          id: 1,
           title: "A Woman of the Iron People",
           author: "Eleanor Arnason"
         },
-        '2' : {
-          id: '2',
-          title: "Anathem",
-          author: "Neal Stephensen"
-        },
-        '3' : {
-          id: '3',
+        3 : {
+          id: 3,
           title: "The C++ Programming Language",
           author: "Bjarne Stroustrup"
+        },
+        2 : {
+          id: 2,
+          title: "Anathem",
+          author: "Neal Stephensen"
         }
       };
 
       booksMock = resourceMock('/books', books);
     });
 
-    it('returns the full list on a simple get', function () {
+    it('returns the full list in key order on a simple get', function () {
       grabHttpResult($http.get('/books'));
       expect(result.status).toEqual(200);
       expect(result.data).toEqual(objToArray(books));
@@ -91,13 +91,13 @@ describe('resourceMock', function () {
     it('returns a single item by id', function () {
       grabHttpResult($http.get('/books/2'));
       expect(result.status).toEqual(200);
-      expect(result.data).toEqual(books['2']);
+      expect(result.data).toEqual(books[2]);
     });
 
     it('is not confused by URL query parameters', function () {
       grabHttpResult($http.get('/books/2?foo=bar'));
       expect(result.status).toEqual(200);
-      expect(result.data).toEqual(books['2']);
+      expect(result.data).toEqual(books[2]);
     });
 
     it('creates an item', function () {
@@ -108,12 +108,9 @@ describe('resourceMock', function () {
       expect(result.status).toEqual(200);
       expect(result.data.title).toEqual('Godel, Escher, Bach');
       expect(result.data.author).toEqual('Douglas Hofstadter');
-      var newId = String(result.data.id);
-      expect(newId.length).toBeGreaterThan(0);
-      expect(newId).not.toEqual('1');
-      expect(newId).not.toEqual('2');
-      expect(newId).not.toEqual('3');
-      expect(result.data).toEqual(books[newId]);
+      expect(typeof result.data.id).toEqual('number');
+      expect(result.data.id).toBeGreaterThan(5);
+      expect(result.data).toEqual(books[result.data.id]);
     });
 
     it('updates an item', function () {
@@ -122,8 +119,8 @@ describe('resourceMock', function () {
         author: 'Neal Stephensen'
       }));
       expect(result.data.title).toEqual('Diamond Age');
-      expect(result.data.id).toEqual('2');
-      expect(result.data).toEqual(books['2']);
+      expect(result.data.id).toEqual(2);
+      expect(result.data).toEqual(books[2]);
     });
 
     it('deletes an item', function () {
@@ -163,7 +160,7 @@ describe('resourceMock', function () {
 
       it('encapsulates show results', function () {
         grabHttpResult($http.get('/books/2'));
-        expect(result.data.book).toEqual(books['2']);
+        expect(result.data.book).toEqual(books[2]);
       });
 
       it('encapsulates results from singleton actions', function () {
@@ -171,8 +168,8 @@ describe('resourceMock', function () {
           title: 'Diamond Age',
           author: 'Neal Stephensen'
         }));
-        expect(result.data.book).toEqual(books['2']);
-        expect(books['2'].title).toEqual('Diamond Age');
+        expect(result.data.book).toEqual(books[2]);
+        expect(books[2].title).toEqual('Diamond Age');
       });
 
       it('leaves http errors at the root of the response', function () {
@@ -203,7 +200,7 @@ describe('resourceMock', function () {
 
         it('includes http response info with show results', function () {
           grabHttpResult($http.get('/books/2'));
-          expect(result.data).toEqual({book: books['2'], response: ok});
+          expect(result.data).toEqual({book: books[2], response: ok});
         });
 
         it('includes http response info with singleton action results', function () {
@@ -211,8 +208,8 @@ describe('resourceMock', function () {
             title: 'Diamond Age',
             author: 'Neal Stephensen'
           }));
-          expect(result.data.book).toEqual(books['2']);
-          expect(books['2'].title).toEqual('Diamond Age');
+          expect(result.data.book).toEqual(books[2]);
+          expect(books[2].title).toEqual('Diamond Age');
           expect(result.data.response).toEqual(ok);
         });
 
@@ -231,24 +228,24 @@ describe('resourceMock', function () {
     describe('with pagination support', function () {
       beforeEach(function() {
         booksMock.setOptions({
-          skipArgument: "skip",
-          limitArgument: "limit"
+          skipArgumentName: "skip",
+          limitArgumentName: "limit"
         });
       });
 
       it('skips the first N results', function () {
         grabHttpResult($http.get('/books?skip=2'));
-        expect(result.data).toEqual([books['3']]);
+        expect(result.data).toEqual([books[3]]);
       });
 
       it('limits to N results', function () {
         grabHttpResult($http.get('/books?limit=2'));
-        expect(result.data).toEqual([books['1'], books['2']]);
+        expect(result.data).toEqual([books[1], books[2]]);
       });
 
       it('skips and limits together to allow pagination', function () {
         grabHttpResult($http.get('/books?skip=1&limit=1'));
-        expect(result.data).toEqual([books['2']]);
+        expect(result.data).toEqual([books[2]]);
       });
     });
   });
@@ -269,26 +266,26 @@ describe('resourceMock', function () {
 
       foods = {
         a: {
-          '1': {
-            id: '1',
+          1: {
+            id: 1,
             name: 'Tempeh Lettuce Tomato Sandwich'
           },
-          '2': {
-            id: '2',
+          2: {
+            id: 2,
             name: 'Coconut Cupcake'
           }
         },
         b: {
-          '3': {
-            id: '3',
+          3: {
+            id: 3,
             name: 'East Loop Pi',
           },
-          '4': {
-            id: '4',
+          4: {
+            id: 4,
             name: 'Maplewood Pi',
           },
-          '5': {
-            id: '5',
+          5: {
+            id: 5,
             name: 'Lincoln Park Pi'
           }
         }
@@ -307,7 +304,7 @@ describe('resourceMock', function () {
     it('returns a single subitem by id', function () {
       grabHttpResult($http.get('/stores/b/foods/3'));
       expect(result.status).toEqual(200);
-      expect(result.data).toEqual(foods['b']['3']);
+      expect(result.data).toEqual(foods['b'][3]);
     });
 
     it('creates a subitem', function () {
@@ -316,14 +313,9 @@ describe('resourceMock', function () {
       }));
       expect(result.status).toEqual(200);
       expect(result.data.name).toEqual('Grove Pi');
-      var newId = String(result.data.id);
-      expect(newId.length).toBeGreaterThan(0);
-      expect(newId).not.toEqual('1');
-      expect(newId).not.toEqual('2');
-      expect(newId).not.toEqual('3');
-      expect(newId).not.toEqual('4');
-      expect(newId).not.toEqual('5');
-      expect(result.data).toEqual(foods['b'][newId]);
+      expect(typeof result.data.id).toEqual('number');
+      expect(result.data.id).toBeGreaterThan(5);
+      expect(result.data).toEqual(foods['b'][result.data.id]);
     });
 
     it('creates new parent path for new subitem if needed', function () {
@@ -347,13 +339,13 @@ describe('resourceMock', function () {
         name: 'Grove Pi'
       }));
       expect(result.data.name).toEqual('Grove Pi');
-      expect(result.data.id).toEqual('4');
-      expect(result.data).toEqual(foods['b']['4']);
+      expect(result.data.id).toEqual(4);
+      expect(result.data).toEqual(foods['b'][4]);
     });
 
     it('deletes a subitem', function () {
       grabHttpResult($http.delete('/stores/b/foods/3'));
-      expect(foods['b']['3']).not.toBeDefined();
+      expect(foods['b'][3]).not.toBeDefined();
       expect(result.data.name).toEqual('East Loop Pi');
 
       grabHttpResult($http.get('/stores/b/foods/3'));
