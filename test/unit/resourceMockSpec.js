@@ -37,6 +37,13 @@ describe('resourceMock', function () {
     expect(result.data).toEqual([]);
   });
 
+  it('is chainable with setOptions', function () {
+    var m = resourceMock("/foo");
+    expect(m.setOptions({
+      httpResponseInfoLabel: 'response'
+    })).toEqual(m);
+  });
+
   describe('when used incorrectly', function () {
     it('fails when given template URL without starting slash', function () {
       expect(function() {

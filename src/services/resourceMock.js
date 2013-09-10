@@ -167,6 +167,7 @@ function($httpBackend) {
         }
         me.options[k] = v;
       });
+      return me;
     },
 
     indexAction: function(ids, url) {
