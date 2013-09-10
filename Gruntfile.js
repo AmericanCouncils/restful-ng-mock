@@ -66,7 +66,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-clean');
 
     grunt.registerTask('test', ['jshint', 'concat:debug', 'karma']);
-    grunt.registerTask('default', ['test']);
     grunt.registerTask('debug', ['concat:debug']);
     grunt.registerTask('prod', ['concat:prod', 'uglify']);
+    grunt.registerTask('default', ['test', 'prod']);
 };
