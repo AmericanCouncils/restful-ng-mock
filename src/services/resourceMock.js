@@ -22,7 +22,7 @@ function($httpBackend) {
       throw 'Invalid baseUrl for resourceMock: "' + baseUrl + '".';
     }
     this.baseUrl = baseUrl;
-    this.dataSource = dataSource;
+    this.dataSource = dataSource || {};
 
     this.options = angular.extend({}, DEFAULT_OPTIONS);
     this.setOptions(options || {});

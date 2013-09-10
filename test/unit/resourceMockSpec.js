@@ -31,6 +31,12 @@ describe('resourceMock', function () {
     return a;
   }
 
+  it('creates an empty data source if none is supplied', function () {
+    var m = resourceMock("/foo");
+    grabHttpResult($http.get("/foo"));
+    expect(result.data).toEqual([]);
+  });
+
   describe('when used incorrectly', function () {
     it('fails when given template URL without starting slash', function () {
       expect(function() {
