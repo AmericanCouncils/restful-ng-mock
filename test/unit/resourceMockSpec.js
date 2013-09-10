@@ -139,6 +139,7 @@ describe('resourceMock', function () {
     it('deletes an item', function () {
       grabHttpResult($http.delete('/books/2'));
       expect(books[2]).not.toBeDefined();
+      expect(result.status).toEqual(200);
       expect(result.data.title).toEqual('Anathem');
 
       grabHttpResult($http.get('/books/2'));
@@ -156,6 +157,16 @@ describe('resourceMock', function () {
           });
         }
       }
+    });
+
+    it('overrides an action with a custom method', function () {
+      booksMock.indexAction = function(ids, url) {
+        return [{foo: 'bar'}];
+      };
+
+      grabHttpResult($http.get('/books'));
+      expect(result.status).toEqual(200);
+      expect(result.data).toEqual([{foo: 'bar'}]);
     });
 
     describe('with labelled responses', function () {
@@ -359,6 +370,7 @@ describe('resourceMock', function () {
     it('deletes a subitem', function () {
       grabHttpResult($http.delete('/stores/b/foods/3'));
       expect(foods['b'][3]).not.toBeDefined();
+      expect(result.status).toEqual(200);
       expect(result.data.name).toEqual('East Loop Pi');
 
       grabHttpResult($http.get('/stores/b/foods/3'));

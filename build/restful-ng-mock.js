@@ -2,7 +2,7 @@
 * restful-ng-mock JavaScript Library
 * https://github.com/AmericanCouncils/restful-ng-mock/ 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 09/10/2013 11:27
+* Compiled At: 09/10/2013 15:24
 ***********************************************/
 (function(window) {
 'use strict';
@@ -184,7 +184,6 @@ function($httpBackend) {
       var storage = this.getStorage(ids);
 
       if (storage) {
-
         var keys = [];
         angular.forEach(storage, function(v, k) {
           if (/^\d+$/.test(k)) {

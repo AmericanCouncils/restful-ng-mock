@@ -174,7 +174,6 @@ function($httpBackend) {
       var storage = this.getStorage(ids);
 
       if (storage) {
-
         var keys = [];
         angular.forEach(storage, function(v, k) {
           if (/^\d+$/.test(k)) {
