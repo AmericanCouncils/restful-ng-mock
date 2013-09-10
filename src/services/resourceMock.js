@@ -235,6 +235,8 @@ function($httpBackend) {
     }
   };
 
+  ResourceMock.prototype.super = ResourceMock.prototype;
+
   var ResourceMockFactory = function(baseUrl, dataSource) {
     return new ResourceMock(baseUrl, dataSource);
   };

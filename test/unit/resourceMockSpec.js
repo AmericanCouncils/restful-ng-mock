@@ -169,6 +169,16 @@ describe('resourceMock', function () {
       expect(result.data).toEqual([{foo: 'bar'}]);
     });
 
+    it('overrides an action with wrapper method', function () {
+      booksMock.indexAction = function() {
+        return this.super.indexAction.apply(this, arguments).slice(1);
+      };
+
+      grabHttpResult($http.get('/books'));
+      expect(result.status).toEqual(200);
+      expect(result.data).toEqual(objToArray(books).slice(1));
+    });
+
     describe('with labelled responses', function () {
       beforeEach(function() {
         booksMock.setOptions({
