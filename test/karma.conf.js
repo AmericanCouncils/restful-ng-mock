@@ -1,7 +1,7 @@
 files = [
     JASMINE,
     JASMINE_ADAPTER,
-    '../bower_components/lodash/lodash.js',
+    '../bower_components/lodash/dist/lodash.js',
     '../bower_components/angular/angular.js',
     '../bower_components/angular-mocks/angular-mocks.js',
     '../bower_components/purl/purl.js',
