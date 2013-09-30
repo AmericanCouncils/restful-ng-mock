@@ -197,13 +197,25 @@ describe('resourceMock', function () {
         expect(result.data.book).toEqual(books[2]);
       });
 
-      it('encapsulates results from singleton actions', function () {
+      it('encapsulates creation results', function () {
+        grabHttpResult($http.post('/books', {
+          title: 'Godel, Escher, Bach',
+          author: 'Douglas Hofstadter'
+        }));
+        expect(result.data.book.title).toEqual('Godel, Escher, Bach');
+      });
+
+      it('encapsulates update results', function () {
         grabHttpResult($http.put('/books/2', {
           title: 'Diamond Age',
           author: 'Neal Stephensen'
         }));
-        expect(result.data.book).toEqual(books[2]);
-        expect(books[2].title).toEqual('Diamond Age');
+        expect(result.data.book.title).toEqual('Diamond Age');
+      });
+
+      it('encapsulates delete results', function () {
+        grabHttpResult($http.delete('/books/2'));
+        expect(result.data.book.title).toEqual('Anathem');
       });
 
       it('leaves http errors at the root of the response', function () {

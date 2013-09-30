@@ -66,7 +66,7 @@ function($httpBackend) {
       ];
     };
 
-    var handle = function(rawUrl, data, headers, handlers) {
+    var handle = function(method, rawUrl, data, headers, handlers) {
       var url = purl(rawUrl);
       var matches = baseUrlRe.exec(url.attr('path')).slice(1);
       var itemIds = [];
@@ -76,38 +76,42 @@ function($httpBackend) {
         }
       }
 
-      var response, encapResponse;
+      var response;
+      var plural = false;
       if (handlers.atRoot && itemIds.length === requiredSegments) {
+        plural = (method === 'GET');
         response =
           handlers.atRoot.call(me, itemIds, url, data, headers);
-
-        if (response && me.options.collectionLabel) {
-          encapResponse = response;
-          response = {};
-          response[me.options.collectionLabel] = encapResponse;
-        }
-        return buildResponse(response);
       } else if (handlers.atItem && itemIds.length > requiredSegments) {
         var superIds = itemIds.slice(0, -1);
         var itemId = itemIds[itemIds.length-1];
         response =
           handlers.atItem.call(me, superIds, itemId, url, data, headers);
-
-        if (response && me.options.singletonLabel) {
-          encapResponse = response;
-          response = {};
-          response[me.options.singletonLabel] = encapResponse;
-        }
-        return buildResponse(response);
       } else {
         // This action isn't handled
-        return buildResponse( new HttpError(400, 'Bad Request') );
+        response = new HttpError(400, 'Bad Request');
       }
+
+      if (response && !(response instanceof HttpError)) {
+        var label = null;
+        if (plural && me.options.collectionLabel) {
+          label = me.options.collectionLabel;
+        } else if (!plural && me.options.singletonLabel) {
+          label = me.options.singletonLabel;
+        }
+        if (label) {
+          var encapResponse = response;
+          response = {};
+          response[label] = encapResponse;
+        }
+      }
+
+      return buildResponse(response);
     };
 
     $httpBackend.whenGET(new RegExp(baseUrlRe))
     .respond(function(method, rawUrl, data, headers) {
-      return handle(rawUrl, data, headers, {
+      return handle(method, rawUrl, data, headers, {
         atRoot: me.indexAction,
         atItem: me.showAction
       });
@@ -115,21 +119,21 @@ function($httpBackend) {
 
     $httpBackend.whenPOST(new RegExp(baseUrlRe))
     .respond(function(method, rawUrl, data, headers) {
-      return handle(rawUrl, data, headers, {
+      return handle(method, rawUrl, data, headers, {
         atRoot: me.createAction
       });
     });
 
     $httpBackend.whenPUT(new RegExp(baseUrlRe))
     .respond(function(method, rawUrl, data, headers) {
-      return handle(rawUrl, data, headers, {
+      return handle(method, rawUrl, data, headers, {
         atItem: me.updateAction
       });
     });
 
     $httpBackend.whenDELETE(new RegExp(baseUrlRe))
     .respond(function(method, rawUrl, data, headers) {
-      return handle(rawUrl, data, headers, {
+      return handle(method, rawUrl, data, headers, {
         atItem: me.deleteAction
       });
     });
