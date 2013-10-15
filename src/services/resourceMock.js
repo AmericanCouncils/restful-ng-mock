@@ -117,7 +117,10 @@ function($httpBackend) {
 
       var response = buildResponse(data);
       if (me.options.debug) {
-        var debug = me.options.debug === true ? defaultDebug : me.options.debug;
+        var debug = me.options.debug;
+        if (typeof debug !== 'function') {
+          debug = defaultDebug;
+        }
         debug(method, rawUrl, body, headers, response[0], response[1]);
       }
       return response;
