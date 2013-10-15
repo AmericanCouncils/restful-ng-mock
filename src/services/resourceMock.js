@@ -76,7 +76,7 @@ function($httpBackend) {
     };
 
     var handle = function(method, rawUrl, body, headers, handlers) {
-      var url = purl(rawUrl);
+      var url = purl(rawUrl, true);
       var matches = baseUrlRe.exec(url.attr('path')).slice(1);
       var itemIds = [];
       for (var i = 0; i < matches.length; ++i) {
