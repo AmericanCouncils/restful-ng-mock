@@ -2,7 +2,7 @@
 * restful-ng-mock JavaScript Library
 * https://github.com/AmericanCouncils/restful-ng-mock/ 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 09/30/2013 13:09
+* Compiled At: 10/15/2013 11:29
 ***********************************************/
 (function(window) {
 'use strict';
@@ -24,7 +24,8 @@ function($httpBackend) {
     singletonLabel: false,
     httpResponseInfoLabel: false,
     skipArgumentName: false,
-    limitArgumentName: false
+    limitArgumentName: false,
+    debug: false
   };
 
   var ResourceMock = function (baseUrl, dataSource, options) {
@@ -76,7 +77,7 @@ function($httpBackend) {
       ];
     };
 
-    var handle = function(method, rawUrl, data, headers, handlers) {
+    var handle = function(method, rawUrl, body, headers, handlers) {
       var url = purl(rawUrl);
       var matches = baseUrlRe.exec(url.attr('path')).slice(1);
       var itemIds = [];
@@ -86,23 +87,23 @@ function($httpBackend) {
         }
       }
 
-      var response;
+      var data;
       var plural = false;
       if (handlers.atRoot && itemIds.length === requiredSegments) {
         plural = (method === 'GET');
-        response =
-          handlers.atRoot.call(me, itemIds, url, data, headers);
+        data =
+          handlers.atRoot.call(me, itemIds, url, body, headers);
       } else if (handlers.atItem && itemIds.length > requiredSegments) {
         var superIds = itemIds.slice(0, -1);
         var itemId = itemIds[itemIds.length-1];
-        response =
-          handlers.atItem.call(me, superIds, itemId, url, data, headers);
+        data =
+          handlers.atItem.call(me, superIds, itemId, url, body, headers);
       } else {
         // This action isn't handled
-        response = new HttpError(400, 'Bad Request');
+        data = new HttpError(400, 'Bad Request');
       }
 
-      if (response && !(response instanceof HttpError)) {
+      if (data && !(data instanceof HttpError)) {
         var label = null;
         if (plural && me.options.collectionLabel) {
           label = me.options.collectionLabel;
@@ -110,40 +111,48 @@ function($httpBackend) {
           label = me.options.singletonLabel;
         }
         if (label) {
-          var encapResponse = response;
-          response = {};
-          response[label] = encapResponse;
+          var encapData = data;
+          data = {};
+          data[label] = encapData;
         }
       }
 
-      return buildResponse(response);
+      var response = buildResponse(data);
+      if (me.options.debug) {
+        console.log(
+          '>>> ' + method + ' ' + rawUrl + '\n' + // Request
+          '<<< ' + response[0] + '\n' + // HTTP response code
+          JSON.stringify(JSON.parse(response[1]), null, 4) // Result body pretty
+        );
+      }
+      return response;
     };
 
     $httpBackend.whenGET(new RegExp(baseUrlRe))
-    .respond(function(method, rawUrl, data, headers) {
-      return handle(method, rawUrl, data, headers, {
+    .respond(function(method, rawUrl, body, headers) {
+      return handle(method, rawUrl, body, headers, {
         atRoot: me.indexAction,
         atItem: me.showAction
       });
     });
 
     $httpBackend.whenPOST(new RegExp(baseUrlRe))
-    .respond(function(method, rawUrl, data, headers) {
-      return handle(method, rawUrl, data, headers, {
+    .respond(function(method, rawUrl, body, headers) {
+      return handle(method, rawUrl, body, headers, {
         atRoot: me.createAction
       });
     });
 
     $httpBackend.whenPUT(new RegExp(baseUrlRe))
-    .respond(function(method, rawUrl, data, headers) {
-      return handle(method, rawUrl, data, headers, {
+    .respond(function(method, rawUrl, body, headers) {
+      return handle(method, rawUrl, body, headers, {
         atItem: me.updateAction
       });
     });
 
     $httpBackend.whenDELETE(new RegExp(baseUrlRe))
-    .respond(function(method, rawUrl, data, headers) {
-      return handle(method, rawUrl, data, headers, {
+    .respond(function(method, rawUrl, body, headers) {
+      return handle(method, rawUrl, body, headers, {
         atItem: me.deleteAction
       });
     });
@@ -222,17 +231,17 @@ function($httpBackend) {
       if (storage && storage[itemId]) { return storage[itemId]; }
     },
 
-    createAction: function(ids, url, data) {
-      var newItem = JSON.parse(data);
+    createAction: function(ids, url, body) {
+      var newItem = JSON.parse(body);
       newItem.id = Math.round(Math.random()*Math.pow(2, 32));
       this.getStorage(ids, true)[newItem.id] = newItem;
       return newItem;
     },
 
-    updateAction: function(superIds, itemId, url, data) {
+    updateAction: function(superIds, itemId, url, body) {
       var storage = this.getStorage(superIds);
       if (storage && storage[itemId]) {
-        var newItem = JSON.parse(data);
+        var newItem = JSON.parse(body);
         newItem.id = storage[itemId].id;
         storage[itemId] = newItem;
         return newItem;

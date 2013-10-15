@@ -179,6 +179,25 @@ describe('resourceMock', function () {
       expect(result.data).toEqual(objToArray(books).slice(1));
     });
 
+    describe('with debug mode enabled', function () {
+      beforeEach(function() {
+        booksMock.setOptions({
+          debug: true
+        });
+
+        spyOn(console, 'log');
+      });
+
+      it('outputs information about successful requests to console.log', function () {
+        grabHttpResult($http.get('/books/1'));
+        expect(console.log).toHaveBeenCalledWith(
+          '>>> GET /books/1\n' +
+          '<<< 200\n' +
+          JSON.stringify(books[1], null, 4)
+        );
+      });
+    });
+
     describe('with labelled responses', function () {
       beforeEach(function() {
         booksMock.setOptions({
