@@ -40,6 +40,14 @@ function($httpBackend) {
 
     var me = this;
 
+    var defaultDebug = function(method, url, body, headers, code, resp) {
+      console.log(
+        '>>> ' + method + ' ' + url + '\n' +
+        '<<< ' + code + '\n' +
+        JSON.stringify(JSON.parse(resp), null, 4)
+      );
+    };
+
     var buildResponse = function(data) {
       if (angular.isUndefined(data)) {
         data = new HttpError(404, 'Not Found');
@@ -109,11 +117,8 @@ function($httpBackend) {
 
       var response = buildResponse(data);
       if (me.options.debug) {
-        console.log(
-          '>>> ' + method + ' ' + rawUrl + '\n' + // Request
-          '<<< ' + response[0] + '\n' + // HTTP response code
-          JSON.stringify(JSON.parse(response[1]), null, 4) // Result body pretty
-        );
+        var debug = me.options.debug === true ? defaultDebug : me.options.debug;
+        debug(method, rawUrl, body, headers, response[0], response[1]);
       }
       return response;
     };
