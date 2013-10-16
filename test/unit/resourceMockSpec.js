@@ -196,11 +196,11 @@ describe('resourceMock', function () {
 
       it('outputs information about requests to console.log', function () {
         grabHttpResult($http.get('/books/1'));
-        expect(console.log).toHaveBeenCalledWith(
-          '>>> GET /books/1\n' +
-          '<<< 200\n' +
-          JSON.stringify(books[1], null, 4)
-        );
+        expect(console.log).toHaveBeenCalledWith([
+          '>>> GET /books/1',
+          '<<< 200',
+          books[1]
+        ]);
       });
     });
 
@@ -221,7 +221,7 @@ describe('resourceMock', function () {
           undefined,
           jasmine.any(Object),
           200,
-          JSON.stringify(books[1])
+          books[1]
         );
       });
     });

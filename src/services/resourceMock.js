@@ -41,11 +41,11 @@ function($httpBackend) {
     var me = this;
 
     var defaultDebug = function(method, url, body, headers, code, resp) {
-      console.log(
-        '>>> ' + method + ' ' + url + '\n' +
-        '<<< ' + code + '\n' +
-        JSON.stringify(JSON.parse(resp), null, 4)
-      );
+      console.log([
+        '>>> ' + method + ' ' + url,
+        '<<< ' + code,
+        resp
+      ]);
     };
 
     var buildResponse = function(data) {
@@ -121,7 +121,7 @@ function($httpBackend) {
         if (typeof debug !== 'function') {
           debug = defaultDebug;
         }
-        debug(method, rawUrl, body, headers, response[0], response[1]);
+        debug(method, rawUrl, body, headers, response[0], JSON.parse(response[1]));
       }
       return response;
     };
