@@ -1,6 +1,6 @@
 {
   "name": "restful-ng-mock",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "main": ["./build/restful-ng-mock.min.js"],
   "dependencies": {
     "purl": "2.3.1",
