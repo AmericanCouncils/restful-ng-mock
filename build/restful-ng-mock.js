@@ -2,7 +2,7 @@
 * restful-ng-mock JavaScript Library
 * https://github.com/AmericanCouncils/restful-ng-mock/ 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 10/16/2013 09:50
+* Compiled At: 10/16/2013 10:09
 ***********************************************/
 (function(window) {
 'use strict';
@@ -51,7 +51,20 @@ function($httpBackend) {
     var me = this;
 
     var defaultDebug = function(method, url, body, headers, code, resp) {
+      // From http://stackoverflow.com/a/10075654/351149
+      var pad = function(n, d) {
+        return new Array(Math.max(d - String(n).length + 1, 0)).join(0) + n;
+      };
+
+      var d = new Date();
+      var dParts = [
+        pad(d.getHours(), 2),
+        pad(d.getMinutes(), 2),
+        pad(d.getSeconds(), 2),
+        pad(d.getMilliseconds(), 3)
+      ];
       console.log([
+        dParts.join(':'),
         '>>> ' + method + ' ' + url,
         '<<< ' + code,
         resp

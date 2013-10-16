@@ -197,6 +197,7 @@ describe('resourceMock', function () {
       it('outputs information about requests to console.log', function () {
         grabHttpResult($http.get('/books/1'));
         expect(console.log).toHaveBeenCalledWith([
+          jasmine.any(String), // timestamp
           '>>> GET /books/1',
           '<<< 200',
           books[1]
