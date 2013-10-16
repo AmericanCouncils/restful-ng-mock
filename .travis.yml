@@ -6,4 +6,4 @@ node_js:
 
 before_script: bower install
 
-script: grunt
+script: grunt test
