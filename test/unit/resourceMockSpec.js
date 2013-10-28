@@ -177,7 +177,7 @@ describe('resourceMock', function () {
 
     it('overrides an action with wrapper method', function () {
       booksMock.indexAction = function() {
-        return this.super.indexAction.apply(this, arguments).slice(1);
+        return this.parent.indexAction.apply(this, arguments).slice(1);
       };
 
       grabHttpResult($http.get('/books'));

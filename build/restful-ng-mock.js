@@ -2,7 +2,7 @@
 * restful-ng-mock JavaScript Library
 * https://github.com/AmericanCouncils/restful-ng-mock/ 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 10/16/2013 10:09
+* Compiled At: 10/28/2013 11:12
 ***********************************************/
 (function(window) {
 'use strict';
@@ -279,7 +279,7 @@ function($httpBackend) {
     }
   };
 
-  ResourceMock.prototype.super = ResourceMock.prototype;
+  ResourceMock.prototype.parent = ResourceMock.prototype;
 
   var ResourceMockFactory = function(baseUrl, dataSource) {
     return new ResourceMock(baseUrl, dataSource);
