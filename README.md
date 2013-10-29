@@ -35,7 +35,6 @@ function(basicMock) {
   });
   
   // This handles POST requests to '/items/<n>/form_voltron'
-  // You can get lots of stuff about the request in your handler function
   mock.route('POST', '/?/form_voltron', function(params, method, url, body, headers) {
     // Url is not a string, but a purl object, see https://github.com/allmarkedup/purl
     // You can use this object to check query parameters easily
