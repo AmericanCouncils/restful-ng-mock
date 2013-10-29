@@ -74,3 +74,11 @@ This automatically provides all the usual CRUD methods:
 * Retrieve an individual person with id 2 at `GET /people/2`.
 * Update them with a new object at `PUT /people/2`.
 * Delete them with `DELETE /people/2`.
+
+The resource mock also supports all the same `basicMock` methods, which is convenient for RPC-ish stuff:
+
+```js
+mock.route('POST', '/?/jump', function(request) {
+  return { result: "I jumped! Now what?" };
+});
+```
