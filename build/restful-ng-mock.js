@@ -2,7 +2,7 @@
 * restful-ng-mock JavaScript Library
 * https://github.com/AmericanCouncils/restful-ng-mock/ 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 10/29/2013 14:18
+* Compiled At: 10/29/2013 15:07
 ***********************************************/
 (function(window) {
 'use strict';
@@ -14,12 +14,13 @@ angular.module('restfulNgMock')
 .factory('basicMock', [
 '$httpBackend',
 function($httpBackend) {
+  var urlRe = /^(\/[\w\-]+|)(\/[\w\-]+|\/\?)*$/;
   function BasicMock(baseUrl, options) {
-    if (!(/^\/[\w\-]+(\/[\w\-]+|\/\?)*$/).test(baseUrl)) {
+    this._baseUrl = baseUrl || '';
+    if (!(urlRe.test(this._baseUrl))) {
       throw 'Invalid baseUrl for resourceMock: "' + baseUrl + '".';
     }
 
-    this._baseUrl = baseUrl;
     this.options = angular.extend({}, this.DEFAULT_OPTIONS);
     this.setOptions(options || {});
   }
@@ -106,8 +107,8 @@ function($httpBackend) {
   };
 
   BasicMock.prototype.route = function(method, url, func) {
-    if (!(/^(\/[\w\-]+|)(\/[\w\-]+|\/\?)*$/).test(url)) {
-      throw 'Invalid url for route: ' + url;
+    if (!(urlRe.test(url))) {
+      throw 'Invalid url for route: "' + url + '".';
     }
     var fullUrl = this._baseUrl + url;
     var urlPattern = fullUrl

@@ -4,7 +4,7 @@ describe('resourceMock', function () {
   beforeEach(module('restfulNgMock'));
 
   var resourceMock, $http, $httpBackend;
-  beforeEach(inject(function(_basicMock_, _resourceMock_, _$http_, _$httpBackend_) {
+  beforeEach(inject(function(_resourceMock_, _$http_, _$httpBackend_) {
     resourceMock = _resourceMock_;
     $http = _$http_;
     $httpBackend = _$httpBackend_;

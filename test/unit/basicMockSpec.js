@@ -55,6 +55,9 @@ describe('basicMock', function () {
       mock.route('GET', '/bar/?', function (params) {
         return { foo: 'bar' + params[0] };
       });
+      mock.route('POST', '/fail', function () {
+        return new this.HttpError(400, "Nope.");
+      });
     });
 
     it('responds on simple routes', function () {
@@ -67,6 +70,12 @@ describe('basicMock', function () {
       grabHttpResult($http.get('/foo/bar/123'));
       expect(result.status).toEqual(200);
       expect(result.data).toEqual({ foo: 'bar123' });
+    });
+
+    it('correctly handles error responses', function () {
+      grabHttpResult($http.post('/foo/fail'));
+      expect(result.status).toEqual(400);
+      expect(result.data).toEqual({ code: 400, message: 'Nope.' });
     });
 
     it('is not confused by URL query parameters', function () {
