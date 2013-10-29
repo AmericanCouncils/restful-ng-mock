@@ -2,7 +2,7 @@
 * restful-ng-mock JavaScript Library
 * https://github.com/AmericanCouncils/restful-ng-mock/ 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 10/29/2013 13:52
+* Compiled At: 10/29/2013 14:18
 ***********************************************/
 (function(window) {
 'use strict';
@@ -105,9 +105,12 @@ function($httpBackend) {
     ]);
   };
 
-  BasicMock.prototype.route = function(method, pattern, func) {
-    var fullPattern = this._baseUrl + pattern;
-    var urlPattern = fullPattern
+  BasicMock.prototype.route = function(method, url, func) {
+    if (!(/^(\/[\w\-]+|)(\/[\w\-]+|\/\?)*$/).test(url)) {
+      throw 'Invalid url for route: ' + url;
+    }
+    var fullUrl = this._baseUrl + url;
+    var urlPattern = fullUrl
       .replace(/\//g, '\\/')
       .replace(/\?/g, '([\\w\\-]+)');
     var re = new RegExp( '^' + urlPattern  + '(?:\\?.*)?$');

@@ -11,12 +11,6 @@ describe('resourceMock', function () {
     setupGrabHttpResult($httpBackend);
   }));
 
-  it('creates an empty data source if none is supplied', function () {
-    var m = resourceMock("/foo");
-    grabHttpResult($http.get("/foo"));
-    expect(result.data).toEqual([]);
-  });
-
   describe('instance', function () {
     var books, booksMock;
     beforeEach(function() {
@@ -49,18 +43,6 @@ describe('resourceMock', function () {
 
     it('returns a single item by id', function () {
       grabHttpResult($http.get('/books/2'));
-      expect(result.status).toEqual(200);
-      expect(result.data).toEqual(books[2]);
-    });
-
-    it('is not confused by URL query parameters', function () {
-      grabHttpResult($http.get('/books/2?foo=bar'));
-      expect(result.status).toEqual(200);
-      expect(result.data).toEqual(books[2]);
-    });
-
-    it('is not confused by URL query parameters with encoded symbols', function () {
-      grabHttpResult($http.get('/books/2?foo=bar@example.com'));
       expect(result.status).toEqual(200);
       expect(result.data).toEqual(books[2]);
     });
@@ -363,5 +345,14 @@ describe('resourceMock', function () {
         }
       }
     });
+  });
+
+  it('creates an empty data source if none is supplied', function () {
+    var m = resourceMock("/foo"); // No data source argument
+    grabHttpResult($http.get("/foo"));
+    expect(result.data).toEqual([]);
+    $http.post("/foo", { foo: 'bar' });
+    grabHttpResult($http.get("/foo"));
+    expect(result.data).toEqual([{foo: 'bar', id: jasmine.any(Number) }]);
   });
 });

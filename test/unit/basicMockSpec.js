@@ -59,12 +59,36 @@ describe('basicMock', function () {
 
     it('responds on simple routes', function () {
       grabHttpResult($http.get('/foo'));
+      expect(result.status).toEqual(200);
       expect(result.data).toEqual({ foo: 'narf' });
     });
 
     it('responds on parameterized routes', function () {
       grabHttpResult($http.get('/foo/bar/123'));
+      expect(result.status).toEqual(200);
       expect(result.data).toEqual({ foo: 'bar123' });
+    });
+
+    it('is not confused by URL query parameters', function () {
+      grabHttpResult($http.get('/foo/bar/54?narf=bork'));
+      expect(result.data).toEqual({ foo: 'bar54' });
+    });
+
+    it('is not confused by URL query parameters with encoded symbols', function () {
+      grabHttpResult($http.get('/foo/bar/53?narf=bork@example.com'));
+      expect(result.data).toEqual({ foo: 'bar53' });
+    });
+
+    it('fails when route is given non-blank URL without starting slash', function () {
+      expect(function() {
+        mock.route('GET', "foo", function() {});
+      }).toThrow();
+    });
+
+    it('fails when route is given URL with closing slash', function () {
+      expect(function() {
+        mock.route('GET', "/foo/", function() {});
+      }).toThrow();
     });
 
     describe('with debug mode enabled with a simple boolean flag', function () {
