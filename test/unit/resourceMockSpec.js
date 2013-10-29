@@ -17,7 +17,7 @@ describe('resourceMock', function () {
     expect(result.data).toEqual([]);
   });
 
-  describe('with a mock set up', function () {
+  describe('instance', function () {
     var books, booksMock;
     beforeEach(function() {
       books = {

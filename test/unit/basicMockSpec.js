@@ -45,7 +45,7 @@ describe('basicMock', function () {
     });
   });
 
-  describe('with a mock set up', function () {
+  describe('instance', function () {
     var mock;
     beforeEach(function() {
       mock = basicMock('/foo');
