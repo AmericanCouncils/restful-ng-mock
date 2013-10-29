@@ -142,18 +142,16 @@ function(basicMock) {
     return this.getStorage(ids);
   };
 
-  ResourceMock.prototype.createAction = function(ids, url, body) {
-    var newItem = JSON.parse(body);
+  ResourceMock.prototype.createAction = function(ids, url, newItem) {
     newItem.id = Math.round(Math.random()*Math.pow(2, 32));
     this.getStorage(ids, true)[newItem.id] = newItem;
     return newItem;
   };
 
-  ResourceMock.prototype.updateAction = function(ids, url, body) {
+  ResourceMock.prototype.updateAction = function(ids, url, newItem) {
     var storage = this.getStorage(ids.slice(0, -1));
     var itemId = ids.pop();
     if (storage && storage[itemId]) {
-      var newItem = JSON.parse(body);
       newItem.id = storage[itemId].id;
       storage[itemId] = newItem;
       return newItem;

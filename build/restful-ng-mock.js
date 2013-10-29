@@ -2,7 +2,7 @@
 * restful-ng-mock JavaScript Library
 * https://github.com/AmericanCouncils/restful-ng-mock/ 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 10/29/2013 15:10
+* Compiled At: 10/29/2013 15:31
 ***********************************************/
 (function(window) {
 'use strict';
@@ -122,6 +122,9 @@ function($httpBackend) {
         var url = purl(rawUrl, true);
         url.raw = rawUrl;
         var params = re.exec(url.attr('path')).slice(1);
+        if (/^application\/json($|;)/.test(headers['Content-Type'])) {
+          body = JSON.parse(body);
+        }
         var r = func.call(me, params, method, url, body, headers);
         return me._buildResponse(r, method, rawUrl, body, headers);
       }
@@ -290,18 +293,16 @@ function(basicMock) {
     return this.getStorage(ids);
   };
 
-  ResourceMock.prototype.createAction = function(ids, url, body) {
-    var newItem = JSON.parse(body);
+  ResourceMock.prototype.createAction = function(ids, url, newItem) {
     newItem.id = Math.round(Math.random()*Math.pow(2, 32));
     this.getStorage(ids, true)[newItem.id] = newItem;
     return newItem;
   };
 
-  ResourceMock.prototype.updateAction = function(ids, url, body) {
+  ResourceMock.prototype.updateAction = function(ids, url, newItem) {
     var storage = this.getStorage(ids.slice(0, -1));
     var itemId = ids.pop();
     if (storage && storage[itemId]) {
-      var newItem = JSON.parse(body);
       newItem.id = storage[itemId].id;
       storage[itemId] = newItem;
       return newItem;

@@ -112,6 +112,9 @@ function($httpBackend) {
         var url = purl(rawUrl, true);
         url.raw = rawUrl;
         var params = re.exec(url.attr('path')).slice(1);
+        if (/^application\/json($|;)/.test(headers['Content-Type'])) {
+          body = JSON.parse(body);
+        }
         var r = func.call(me, params, method, url, body, headers);
         return me._buildResponse(r, method, rawUrl, body, headers);
       }

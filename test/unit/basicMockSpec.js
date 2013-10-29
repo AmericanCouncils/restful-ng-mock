@@ -55,6 +55,15 @@ describe('basicMock', function () {
       mock.route('GET', '/bar/?', function (params) {
         return { foo: 'bar' + params[0] };
       });
+      mock.route('GET', '/tripleParam', function (params, method, url) {
+        return { product: parseInt(url.param('number')) * 3 };
+      });
+      mock.route('POST', '/doubleJson', function (params, method, url, reqData) {
+        return { product: reqData.number * 2 };
+      });
+      mock.route('POST', '/quadrupleRaw', function (params, method, url, reqData) {
+        return { product: parseInt(reqData) * 4 };
+      });
       mock.route('POST', '/fail', function () {
         return new this.HttpError(400, "Nope.");
       });
@@ -76,6 +85,21 @@ describe('basicMock', function () {
       grabHttpResult($http.post('/foo/fail'));
       expect(result.status).toEqual(400);
       expect(result.data).toEqual({ code: 400, message: 'Nope.' });
+    });
+
+    it('accepts query parameters', function () {
+      grabHttpResult($http.get('/foo/tripleParam?number=5'));
+      expect(result.data).toEqual({ product: 15 });
+    });
+
+    it('accepts JSON data and parses it for handler function', function () {
+      grabHttpResult($http.post('/foo/doubleJson', { number: 3 }));
+      expect(result.data).toEqual({ product: 6 });
+    });
+
+    it('accepts string data and passes it through to handler function', function () {
+      grabHttpResult($http.post('/foo/quadrupleRaw', "20"));
+      expect(result.data).toEqual({ product: 80 });
     });
 
     describe('with response info inclusion enabled', function () {
