@@ -1,8 +1,8 @@
 {
   "name": "restful-ng-mock",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Quickly mock up common HTTP service API patterns.",
-  "main": "restful-ng-mock.min.js",
+  "main": "build/restful-ng-mock.min.js",
   "directories": {
     "test": "test"
   },
