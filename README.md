@@ -27,20 +27,19 @@ function(basicMock) {
     return items;
   });
   
-  // A question mark allows any single alphanumeric value (underscores and dashes are allowed too)
-  // So, this handles requests to '/items/<n>' for any value <n>
-  mock.route('GET', '/?', function(params) {
-    var id = params[0];
+  // A question mark allows an arbitrary argument
+  // So, this handles requests to '/items/<n>' for any single value <n>
+  mock.route('GET', '/?', function(request) {
+    var id =  request.pathArgs[0];
     return items[id]; // Null and undefined values will automatically be transformed to 404 responses
   });
   
   // This handles POST requests to '/items/<n>/form_voltron'
-  mock.route('POST', '/?/form_voltron', function(params, method, url, body, headers) {
-    // Url is not a string, but a purl object, see https://github.com/allmarkedup/purl
-    // You can use this object to check query parameters easily
-    if (url.param('password') == 'abc123') {
-      // Require that URL was something like /items/123/form_voltron?password=abc123
-      return { result: "I'll form the head!", content: JSON.parse(body) };
+  mock.route('POST', '/?/form_voltron', function(request) {
+    // request.url is a purl url object, see https://github.com/allmarkedup/purl
+    if (request.url.param('password') == 'abc123') {
+      // Require that the URL was something like /items/123/form_voltron?password=abc123
+      return { result: "I'll form the head!", content: JSON.parse(request.body) };
     } else {
       // Return HttpError for non-200 responses
       return new this.HttpError(400, "You're not Voltron!");

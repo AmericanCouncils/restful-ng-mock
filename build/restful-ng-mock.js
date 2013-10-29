@@ -2,7 +2,7 @@
 * restful-ng-mock JavaScript Library
 * https://github.com/AmericanCouncils/restful-ng-mock/ 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 10/29/2013 15:31
+* Compiled At: 10/29/2013 15:52
 ***********************************************/
 (function(window) {
 'use strict';
@@ -36,12 +36,30 @@ function($httpBackend) {
     return HttpError;
   })();
 
+  // Nested class HttpRequest
+  BasicMock.prototype.HttpRequest = (function() {
+    function HttpRequest(pathArgs, method, rawUrl, url, body, headers) {
+      this.pathArgs = pathArgs;
+      this.method = method;
+      this.rawUrl = rawUrl;
+      this.url = url;
+      this.rawBody = body;
+      if (/^application\/json($|;)/.test(headers['Content-Type'])) {
+        this.body = JSON.parse(body);
+      } else {
+        this.body = body;
+      }
+      this.headers = headers;
+    }
+    return HttpRequest;
+  })();
+
   BasicMock.prototype.DEFAULT_OPTIONS = {
     debug: false,
     httpResponseInfoLabel: false
   };
 
-  BasicMock.prototype._buildResponse = function(data, method, rawUrl, reqBody, reqHeaders) {
+  BasicMock.prototype._buildResponse = function(data, request) {
     if (angular.isUndefined(data) || data === null) {
       data = new this.HttpError(404, 'Not Found');
     }
@@ -68,14 +86,7 @@ function($httpBackend) {
       if (typeof debug !== 'function') {
         debug = this._defaultDebug;
       }
-      debug(
-        method,
-        rawUrl,
-        reqBody,
-        reqHeaders,
-        responseInfo.code,
-        JSON.parse(jsonString)
-      );
+      debug(request, responseInfo, JSON.parse(jsonString));
     }
 
     return [
@@ -85,7 +96,7 @@ function($httpBackend) {
     ];
   };
 
-  BasicMock.prototype._defaultDebug = function(method, rawUrl, body, headers, code, resp) {
+  BasicMock.prototype._defaultDebug = function(request, responseInfo, responseData) {
     // From http://stackoverflow.com/a/10075654/351149
     var pad = function(n, d) {
       return new Array(Math.max(d - String(n).length + 1, 0)).join(0) + n;
@@ -100,9 +111,9 @@ function($httpBackend) {
     ];
     console.log([
       dParts.join(':'),
-      '>>> ' + method + ' ' + rawUrl,
-      '<<< ' + code,
-      resp
+      '>>> ' + request.method + ' ' + request.rawUrl,
+      '<<< ' + responseInfo.code,
+      responseData
     ]);
   };
 
@@ -119,14 +130,11 @@ function($httpBackend) {
     var me = this;
     $httpBackend.when(method, re).respond(
       function(method, rawUrl, body, headers) {
-        var url = purl(rawUrl, true);
-        url.raw = rawUrl;
-        var params = re.exec(url.attr('path')).slice(1);
-        if (/^application\/json($|;)/.test(headers['Content-Type'])) {
-          body = JSON.parse(body);
-        }
-        var r = func.call(me, params, method, url, body, headers);
-        return me._buildResponse(r, method, rawUrl, body, headers);
+        var purlUrl = purl(rawUrl, true);
+        var params = re.exec(purlUrl.attr('path')).slice(1);
+        var request = new me.HttpRequest(params, method, rawUrl, purlUrl, body, headers);
+        var r = func.call(me, request);
+        return me._buildResponse(r, request);
       }
     );
   };
@@ -165,29 +173,29 @@ function(basicMock) {
       if (baseUrl.charAt(cidx) === '?') { ++this.requiredParams; }
     }
 
-    this.route('GET', '', function(params, method, url, body, headers) {
-      var data = this.indexAction(params, url, body, headers);
-      return this._labelEncap(true, data);
+    this.route('GET', '', function(request) {
+      var response = this.indexAction(request);
+      return this._labelEncap(true, response);
     });
 
-    this.route('GET', '/?', function(params, method, url, body, headers) {
-      var data = this.showAction(params, url, body, headers);
-      return this._labelEncap(false, data);
+    this.route('GET', '/?', function(request) {
+      var response = this.showAction(request);
+      return this._labelEncap(false, response);
     });
 
-    this.route('POST', '', function(params, method, url, body, headers) {
-      var data = this.createAction(params, url, body, headers);
-      return this._labelEncap(false, data);
+    this.route('POST', '', function(request) {
+      var response = this.createAction(request);
+      return this._labelEncap(false, response);
     });
 
-    this.route('PUT', '/?', function(params, method, url, body, headers) {
-      var data = this.updateAction(params, url, body, headers);
-      return this._labelEncap(false, data);
+    this.route('PUT', '/?', function(request) {
+      var response = this.updateAction(request);
+      return this._labelEncap(false, response);
     });
 
-    this.route('DELETE', '/?', function(params, method, url, body, headers) {
-      var data = this.deleteAction(params, url, body, headers);
-      return this._labelEncap(false, data);
+    this.route('DELETE', '/?', function(request) {
+      var response = this.deleteAction(request);
+      return this._labelEncap(false, response);
     });
   }
 
@@ -256,8 +264,8 @@ function(basicMock) {
     return d || null;
   };
 
-  ResourceMock.prototype.indexAction = function(ids, url) {
-    var storage = this.getStorage(ids);
+  ResourceMock.prototype.indexAction = function(request) {
+    var storage = this.getStorage(request.pathArgs);
 
     if (storage) {
       var keys = [];
@@ -270,14 +278,14 @@ function(basicMock) {
       keys.sort();
 
       if (this.options['skipArgumentName']) {
-        var skip = parseInt(url.param(this.options['skipArgumentName']), 10);
+        var skip = parseInt(request.url.param(this.options['skipArgumentName']), 10);
         if (skip) {
           keys = keys.slice(skip);
         }
       }
 
       if (this.options['limitArgumentName']) {
-        var lim = parseInt(url.param(this.options['limitArgumentName']), 10);
+        var lim = parseInt(request.url.param(this.options['limitArgumentName']), 10);
         if (lim) {
           keys = keys.slice(0, lim);
         }
@@ -289,19 +297,21 @@ function(basicMock) {
     }
   };
 
-  ResourceMock.prototype.showAction = function(ids) {
-    return this.getStorage(ids);
+  ResourceMock.prototype.showAction = function(request) {
+    return this.getStorage(request.pathArgs);
   };
 
-  ResourceMock.prototype.createAction = function(ids, url, newItem) {
+  ResourceMock.prototype.createAction = function(request) {
+    var newItem = request.body;
     newItem.id = Math.round(Math.random()*Math.pow(2, 32));
-    this.getStorage(ids, true)[newItem.id] = newItem;
+    this.getStorage(request.pathArgs, true)[newItem.id] = newItem;
     return newItem;
   };
 
-  ResourceMock.prototype.updateAction = function(ids, url, newItem) {
-    var storage = this.getStorage(ids.slice(0, -1));
-    var itemId = ids.pop();
+  ResourceMock.prototype.updateAction = function(request) {
+    var newItem = request.body;
+    var storage = this.getStorage(request.pathArgs.slice(0, -1));
+    var itemId = request.pathArgs[request.pathArgs.length-1];
     if (storage && storage[itemId]) {
       newItem.id = storage[itemId].id;
       storage[itemId] = newItem;
@@ -309,9 +319,9 @@ function(basicMock) {
     }
   };
 
-  ResourceMock.prototype.deleteAction = function(ids) {
-    var storage = this.getStorage(ids.slice(0, -1));
-    var itemId = ids.pop();
+  ResourceMock.prototype.deleteAction = function(request) {
+    var storage = this.getStorage(request.pathArgs.slice(0, -1));
+    var itemId = request.pathArgs[request.pathArgs.length-1];
     if (storage && storage[itemId]) {
       var item = storage[itemId];
       delete storage[itemId];

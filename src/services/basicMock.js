@@ -26,12 +26,30 @@ function($httpBackend) {
     return HttpError;
   })();
 
+  // Nested class HttpRequest
+  BasicMock.prototype.HttpRequest = (function() {
+    function HttpRequest(pathArgs, method, rawUrl, url, body, headers) {
+      this.pathArgs = pathArgs;
+      this.method = method;
+      this.rawUrl = rawUrl;
+      this.url = url;
+      this.rawBody = body;
+      if (/^application\/json($|;)/.test(headers['Content-Type'])) {
+        this.body = JSON.parse(body);
+      } else {
+        this.body = body;
+      }
+      this.headers = headers;
+    }
+    return HttpRequest;
+  })();
+
   BasicMock.prototype.DEFAULT_OPTIONS = {
     debug: false,
     httpResponseInfoLabel: false
   };
 
-  BasicMock.prototype._buildResponse = function(data, method, rawUrl, reqBody, reqHeaders) {
+  BasicMock.prototype._buildResponse = function(data, request) {
     if (angular.isUndefined(data) || data === null) {
       data = new this.HttpError(404, 'Not Found');
     }
@@ -58,14 +76,7 @@ function($httpBackend) {
       if (typeof debug !== 'function') {
         debug = this._defaultDebug;
       }
-      debug(
-        method,
-        rawUrl,
-        reqBody,
-        reqHeaders,
-        responseInfo.code,
-        JSON.parse(jsonString)
-      );
+      debug(request, responseInfo, JSON.parse(jsonString));
     }
 
     return [
@@ -75,7 +86,7 @@ function($httpBackend) {
     ];
   };
 
-  BasicMock.prototype._defaultDebug = function(method, rawUrl, body, headers, code, resp) {
+  BasicMock.prototype._defaultDebug = function(request, responseInfo, responseData) {
     // From http://stackoverflow.com/a/10075654/351149
     var pad = function(n, d) {
       return new Array(Math.max(d - String(n).length + 1, 0)).join(0) + n;
@@ -90,9 +101,9 @@ function($httpBackend) {
     ];
     console.log([
       dParts.join(':'),
-      '>>> ' + method + ' ' + rawUrl,
-      '<<< ' + code,
-      resp
+      '>>> ' + request.method + ' ' + request.rawUrl,
+      '<<< ' + responseInfo.code,
+      responseData
     ]);
   };
 
@@ -109,14 +120,11 @@ function($httpBackend) {
     var me = this;
     $httpBackend.when(method, re).respond(
       function(method, rawUrl, body, headers) {
-        var url = purl(rawUrl, true);
-        url.raw = rawUrl;
-        var params = re.exec(url.attr('path')).slice(1);
-        if (/^application\/json($|;)/.test(headers['Content-Type'])) {
-          body = JSON.parse(body);
-        }
-        var r = func.call(me, params, method, url, body, headers);
-        return me._buildResponse(r, method, rawUrl, body, headers);
+        var purlUrl = purl(rawUrl, true);
+        var params = re.exec(purlUrl.attr('path')).slice(1);
+        var request = new me.HttpRequest(params, method, rawUrl, purlUrl, body, headers);
+        var r = func.call(me, request);
+        return me._buildResponse(r, request);
       }
     );
   };

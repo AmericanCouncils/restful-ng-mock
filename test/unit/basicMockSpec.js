@@ -52,17 +52,17 @@ describe('basicMock', function () {
       mock.route('GET', '', function () {
         return { foo: 'narf' };
       });
-      mock.route('GET', '/bar/?', function (params) {
-        return { foo: 'bar' + params[0] };
+      mock.route('GET', '/bar/?', function (request) {
+        return { foo: 'bar' + request.pathArgs[0] };
       });
-      mock.route('GET', '/tripleParam', function (params, method, url) {
-        return { product: parseInt(url.param('number')) * 3 };
+      mock.route('GET', '/tripleParam', function (request) {
+        return { product: parseInt(request.url.param('number')) * 3 };
       });
-      mock.route('POST', '/doubleJson', function (params, method, url, reqData) {
-        return { product: reqData.number * 2 };
+      mock.route('POST', '/doubleJson', function (request) {
+        return { product: request.body.number * 2 };
       });
-      mock.route('POST', '/quadrupleRaw', function (params, method, url, reqData) {
-        return { product: parseInt(reqData) * 4 };
+      mock.route('POST', '/quadrupleRaw', function (request) {
+        return { product: parseInt(request.body) * 4 };
       });
       mock.route('POST', '/fail', function () {
         return new this.HttpError(400, "Nope.");
@@ -173,14 +173,13 @@ describe('basicMock', function () {
 
       it('calls the function with request and response info', function () {
         grabHttpResult($http.get('/foo/bar/89'));
-        expect(debugSpy).toHaveBeenCalledWith(
-          'GET',
-          '/foo/bar/89',
-          undefined,
-          jasmine.any(Object),
-          200,
-          { foo: 'bar89' }
-        );
+        debugSpy.andCallThrough(function(request, responseInfo, responseBody) {
+          expect(request.method).toEqual('GET');
+          expect(request.rawUrl).toEqual('/foo/bar/89');
+          expect(responseInfo.code).toEqual(200);
+          expect(responseBody).toEqaul({ foo: 'bar89' });
+        });
+        expect(debugSpy).toHaveBeenCalled();
       });
     });
 

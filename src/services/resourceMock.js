@@ -14,29 +14,29 @@ function(basicMock) {
       if (baseUrl.charAt(cidx) === '?') { ++this.requiredParams; }
     }
 
-    this.route('GET', '', function(params, method, url, body, headers) {
-      var data = this.indexAction(params, url, body, headers);
-      return this._labelEncap(true, data);
+    this.route('GET', '', function(request) {
+      var response = this.indexAction(request);
+      return this._labelEncap(true, response);
     });
 
-    this.route('GET', '/?', function(params, method, url, body, headers) {
-      var data = this.showAction(params, url, body, headers);
-      return this._labelEncap(false, data);
+    this.route('GET', '/?', function(request) {
+      var response = this.showAction(request);
+      return this._labelEncap(false, response);
     });
 
-    this.route('POST', '', function(params, method, url, body, headers) {
-      var data = this.createAction(params, url, body, headers);
-      return this._labelEncap(false, data);
+    this.route('POST', '', function(request) {
+      var response = this.createAction(request);
+      return this._labelEncap(false, response);
     });
 
-    this.route('PUT', '/?', function(params, method, url, body, headers) {
-      var data = this.updateAction(params, url, body, headers);
-      return this._labelEncap(false, data);
+    this.route('PUT', '/?', function(request) {
+      var response = this.updateAction(request);
+      return this._labelEncap(false, response);
     });
 
-    this.route('DELETE', '/?', function(params, method, url, body, headers) {
-      var data = this.deleteAction(params, url, body, headers);
-      return this._labelEncap(false, data);
+    this.route('DELETE', '/?', function(request) {
+      var response = this.deleteAction(request);
+      return this._labelEncap(false, response);
     });
   }
 
@@ -105,8 +105,8 @@ function(basicMock) {
     return d || null;
   };
 
-  ResourceMock.prototype.indexAction = function(ids, url) {
-    var storage = this.getStorage(ids);
+  ResourceMock.prototype.indexAction = function(request) {
+    var storage = this.getStorage(request.pathArgs);
 
     if (storage) {
       var keys = [];
@@ -119,14 +119,14 @@ function(basicMock) {
       keys.sort();
 
       if (this.options['skipArgumentName']) {
-        var skip = parseInt(url.param(this.options['skipArgumentName']), 10);
+        var skip = parseInt(request.url.param(this.options['skipArgumentName']), 10);
         if (skip) {
           keys = keys.slice(skip);
         }
       }
 
       if (this.options['limitArgumentName']) {
-        var lim = parseInt(url.param(this.options['limitArgumentName']), 10);
+        var lim = parseInt(request.url.param(this.options['limitArgumentName']), 10);
         if (lim) {
           keys = keys.slice(0, lim);
         }
@@ -138,19 +138,21 @@ function(basicMock) {
     }
   };
 
-  ResourceMock.prototype.showAction = function(ids) {
-    return this.getStorage(ids);
+  ResourceMock.prototype.showAction = function(request) {
+    return this.getStorage(request.pathArgs);
   };
 
-  ResourceMock.prototype.createAction = function(ids, url, newItem) {
+  ResourceMock.prototype.createAction = function(request) {
+    var newItem = request.body;
     newItem.id = Math.round(Math.random()*Math.pow(2, 32));
-    this.getStorage(ids, true)[newItem.id] = newItem;
+    this.getStorage(request.pathArgs, true)[newItem.id] = newItem;
     return newItem;
   };
 
-  ResourceMock.prototype.updateAction = function(ids, url, newItem) {
-    var storage = this.getStorage(ids.slice(0, -1));
-    var itemId = ids.pop();
+  ResourceMock.prototype.updateAction = function(request) {
+    var newItem = request.body;
+    var storage = this.getStorage(request.pathArgs.slice(0, -1));
+    var itemId = request.pathArgs[request.pathArgs.length-1];
     if (storage && storage[itemId]) {
       newItem.id = storage[itemId].id;
       storage[itemId] = newItem;
@@ -158,9 +160,9 @@ function(basicMock) {
     }
   };
 
-  ResourceMock.prototype.deleteAction = function(ids) {
-    var storage = this.getStorage(ids.slice(0, -1));
-    var itemId = ids.pop();
+  ResourceMock.prototype.deleteAction = function(request) {
+    var storage = this.getStorage(request.pathArgs.slice(0, -1));
+    var itemId = request.pathArgs[request.pathArgs.length-1];
     if (storage && storage[itemId]) {
       var item = storage[itemId];
       delete storage[itemId];
