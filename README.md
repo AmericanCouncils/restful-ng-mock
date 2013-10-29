@@ -34,7 +34,8 @@ function(basicMock) {
   // So, this handles requests to '/items/<n>' for any single value <n>
   mock.route('GET', '/?', function(request) {
     var id =  request.pathArgs[0];
-    return items[id]; // Null and undefined values will automatically be transformed to 404 responses
+    // Null and undefined values will automatically be transformed to 404 responses
+    return items[id]; 
   });
   
   // This handles POST requests to '/items/<n>/form_voltron'
