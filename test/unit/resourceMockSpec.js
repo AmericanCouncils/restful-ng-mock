@@ -131,48 +131,6 @@ describe('resourceMock', function () {
       expect(result.data).toEqual(objToArray(books).slice(1));
     });
 
-    describe('with debug mode enabled with a simple boolean flag', function () {
-      beforeEach(function() {
-        booksMock.setOptions({
-          debug: true
-        });
-
-        spyOn(console, 'log');
-      });
-
-      it('outputs information about requests to console.log', function () {
-        grabHttpResult($http.get('/books/1'));
-        expect(console.log).toHaveBeenCalledWith([
-          jasmine.any(String), // timestamp
-          '>>> GET /books/1',
-          '<<< 200',
-          books[1]
-        ]);
-      });
-    });
-
-    describe('with debug mode enabled with a custom function', function () {
-      var debugSpy;
-      beforeEach(function() {
-        debugSpy = jasmine.createSpy('debugSpy');
-        booksMock.setOptions({
-          debug: debugSpy
-        });
-      });
-
-      it('calls the function with request and response info', function () {
-        grabHttpResult($http.get('/books/1'));
-        expect(debugSpy).toHaveBeenCalledWith(
-          'GET',
-          '/books/1',
-          undefined,
-          jasmine.any(Object),
-          200,
-          books[1]
-        );
-      });
-    });
-
     describe('with labelled responses', function () {
       beforeEach(function() {
         booksMock.setOptions({

@@ -66,5 +66,48 @@ describe('basicMock', function () {
       grabHttpResult($http.get('/foo/bar/123'));
       expect(result.data).toEqual({ foo: 'bar123' });
     });
+
+    describe('with debug mode enabled with a simple boolean flag', function () {
+      beforeEach(function() {
+        mock.setOptions({
+          debug: true
+        });
+
+        spyOn(console, 'log');
+      });
+
+      it('outputs information about requests to console.log', function () {
+        grabHttpResult($http.get('/foo/bar/99'));
+        expect(console.log).toHaveBeenCalledWith([
+          jasmine.any(String), // timestamp
+          '>>> GET /foo/bar/99',
+          '<<< 200',
+          { foo: 'bar99' }
+        ]);
+      });
+    });
+
+    describe('with debug mode enabled with a custom function', function () {
+      var debugSpy;
+      beforeEach(function() {
+        debugSpy = jasmine.createSpy('debugSpy');
+        mock.setOptions({
+          debug: debugSpy
+        });
+      });
+
+      it('calls the function with request and response info', function () {
+        grabHttpResult($http.get('/foo/bar/89'));
+        expect(debugSpy).toHaveBeenCalledWith(
+          'GET',
+          '/foo/bar/89',
+          undefined,
+          jasmine.any(Object),
+          200,
+          { foo: 'bar89' }
+        );
+      });
+    });
+
   });
 });
