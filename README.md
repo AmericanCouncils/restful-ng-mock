@@ -12,13 +12,16 @@ usual lines in app.js (to `restfulNgMock`) and index.html (to
 
 ## Basic mocks
 
+Create a mock object for each major resource on your server under a given
+URL prefix. For example, suppose you have some URLs available under `/items`:
+
 ```js
 angular.module('myApp').factory('mockItems', [
 'basicMock', // This service is from restful-ng-mock
 function(basicMock) {
   var items = {
-    1: { name: 'Foo'},
-    2: { name: 'Bar'}
+    1: { id: 1, name: 'Foo'},
+    2: { id: 2, name: 'Bar'}
   };
   var mock = basicMock('/items');
   
@@ -47,3 +50,27 @@ function(basicMock) {
   });
 }]);
 ```
+
+## Resource mocks
+
+Often, a server may be implementing a database-like service with the usual CRUD actions. There is a convenience service `resourceMock` that makes this easier:
+
+```js
+angular.module('myApp').factory('mockPeople', [
+'resourceMock', // This service is from restful-ng-mock
+function(resourceMock) {
+  var people = {
+    1: { id: 1, name: 'Alice'},
+    2: { id: 2, name: 'Bob'}
+  };
+  var mock = resourceMock('/people', people);
+}]);
+```
+
+This automatically provides all the usual CRUD methods:
+
+* Get a list of people at `GET /people`. Indexes are returned as arrays rather than objects, even though the internal data store is an object.
+* Create new people with `POST /people`. They are automatically assigned a new random numeric id.
+* Retrieve an individual person with id 2 at `GET /people/2`.
+* Update them with a new object at `PUT /people/2`.
+* Delete them with `DELETE /people/2`.
