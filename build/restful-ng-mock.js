@@ -2,7 +2,7 @@
 * restful-ng-mock JavaScript Library
 * https://github.com/AmericanCouncils/restful-ng-mock/ 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 10/29/2013 11:16
+* Compiled At: 10/29/2013 11:19
 ***********************************************/
 (function(window) {
 'use strict';
@@ -24,6 +24,10 @@ function($httpBackend) {
   };
 
   var BasicMock = function (base, options) {
+    if (!(/^\/[\w\-]+(\/[\w\-]+|\/\?)*$/).test(base)) {
+      throw 'Invalid base for resourceMock: "' + base + '".';
+    }
+
     this.base = base;
     this.options = angular.extend({}, DEFAULT_OPTIONS);
     this.setOptions(options || {});

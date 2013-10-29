@@ -14,6 +14,10 @@ function($httpBackend) {
   };
 
   var BasicMock = function (base, options) {
+    if (!(/^\/[\w\-]+(\/[\w\-]+|\/\?)*$/).test(base)) {
+      throw 'Invalid base for resourceMock: "' + base + '".';
+    }
+
     this.base = base;
     this.options = angular.extend({}, DEFAULT_OPTIONS);
     this.setOptions(options || {});

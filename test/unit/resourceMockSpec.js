@@ -17,41 +17,7 @@ describe('resourceMock', function () {
     expect(result.data).toEqual([]);
   });
 
-  it('is chainable with setOptions', function () {
-    var m = resourceMock("/foo");
-    expect(m.setOptions({
-      httpResponseInfoLabel: 'response'
-    })).toEqual(m);
-  });
-
-  describe('when used incorrectly', function () {
-    it('fails when given template URL without starting slash', function () {
-      expect(function() {
-        resourceMock("foo");
-      }).toThrow();
-    });
-
-    it('fails when given template URL with closing slash', function () {
-      expect(function() {
-        resourceMock("/foo/");
-      }).toThrow();
-    });
-
-    it('fails when given template URL with invalid character', function () {
-      expect(function() {
-        resourceMock("/fo&o");
-      }).toThrow();
-    });
-
-    it('fails when given invalid options to setOptions', function () {
-      var m = resourceMock("/foo");
-      expect(function() {
-        m.setOptions({noSuchOption: 123});
-      }).toThrow();
-    });
-  });
-
-  describe('with a resource mock', function () {
+  describe('with a mock set up', function () {
     var books, booksMock;
     beforeEach(function() {
       books = {
