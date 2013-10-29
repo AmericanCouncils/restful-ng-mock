@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/AmericanCouncils/restful-ng-mock.png?branch=master)](https://travis-ci.org/AmericanCouncils/restful-ng-mock)
 
-When you're writing an Angular app for those APIs, you will often want to create a client-side mock that simulates the server. This is typically done with [`$httpBackend`](http://docs.angularjs.org/api/ngMock.$httpBackend), but manually adding all your web methods with that module's low-level interface can be tedious and error-prone. `restful-ng-mock` is a frontend to `$httpBackend` that handles a lot of the most common stuff for you, such as converting responses to JSON and providing sensible default implementations of the standard CRUD methods.0
+When you're writing an Angular app for those APIs, you will often want to create a client-side mock that simulates the server. This is typically done with [`$httpBackend`](http://docs.angularjs.org/api/ngMock.$httpBackend), but manually adding all your web methods with that module's low-level interface can be tedious and error-prone. `restful-ng-mock` is a frontend to `$httpBackend` that handles a lot of the most common stuff for you, such as converting responses to JSON and providing sensible default implementations of the standard CRUD methods.
 
 ## Installation
 
