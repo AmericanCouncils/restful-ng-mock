@@ -4,7 +4,7 @@ describe('resourceMock', function () {
   beforeEach(module('restfulNgMock'));
 
   var resourceMock, $http, $httpBackend;
-  beforeEach(inject(function(_resourceMock_, _$http_, _$httpBackend_) {
+  beforeEach(inject(function(_basicMock_, _resourceMock_, _$http_, _$httpBackend_) {
     resourceMock = _resourceMock_;
     $http = _$http_;
     $httpBackend = _$httpBackend_;
@@ -94,7 +94,7 @@ describe('resourceMock', function () {
     });
 
     it('overrides an action with a custom method', function () {
-      booksMock.indexAction = function(ids, url) {
+      booksMock.indexAction = function() {
         return [{foo: 'bar'}];
       };
 
@@ -104,8 +104,8 @@ describe('resourceMock', function () {
     });
 
     it('overrides an action with wrapper method', function () {
-      booksMock.indexAction = function() {
-        return this.parent.indexAction.apply(this, arguments).slice(1);
+      booksMock.indexAction = function(request) {
+        return this.parent.indexAction.call(this, request).slice(1);
       };
 
       grabHttpResult($http.get('/books'));
