@@ -78,6 +78,24 @@ describe('basicMock', function () {
       expect(result.data).toEqual({ code: 400, message: 'Nope.' });
     });
 
+    describe('with response info inclusion enabled', function () {
+      beforeEach(function() {
+        mock.setOptions({httpResponseInfoLabel: 'response'});
+      });
+
+      it('includes response info in normal responses', function () {
+        grabHttpResult($http.get('/foo'));
+        expect(result.status).toEqual(200);
+        expect(result.data).toEqual({ foo: 'narf', response: { code: 200, message: 'OK' }});
+      });
+
+      it('encapsulates resposne info in error responses', function () {
+        grabHttpResult($http.post('/foo/fail'));
+        expect(result.status).toEqual(400);
+        expect(result.data).toEqual({ response: { code: 400, message: 'Nope.' } });
+      });
+    });
+
     it('is not confused by URL query parameters', function () {
       grabHttpResult($http.get('/foo/bar/54?narf=bork'));
       expect(result.data).toEqual({ foo: 'bar54' });
