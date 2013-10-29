@@ -13,12 +13,12 @@ function($httpBackend) {
     debug: false
   };
 
-  var BasicMock = function (base, options) {
-    if (!(/^\/[\w\-]+(\/[\w\-]+|\/\?)*$/).test(base)) {
-      throw 'Invalid base for resourceMock: "' + base + '".';
+  var BasicMock = function (baseUrl, options) {
+    if (!(/^\/[\w\-]+(\/[\w\-]+|\/\?)*$/).test(baseUrl)) {
+      throw 'Invalid baseUrl for resourceMock: "' + baseUrl + '".';
     }
 
-    this.base = base;
+    this.baseUrl = baseUrl;
     this.options = angular.extend({}, DEFAULT_OPTIONS);
     this.setOptions(options || {});
   };
@@ -52,7 +52,7 @@ function($httpBackend) {
     },
 
     route: function(method, pattern, func) {
-      var fullPattern = this.base + pattern;
+      var fullPattern = this.baseUrl + pattern;
       var urlPattern = fullPattern
         .replace('/', '\\/', 'g')
         .replace('?', '([\\w\\-]+)');
@@ -81,8 +81,8 @@ function($httpBackend) {
     }
   };
 
-  var BasicMockFactory = function(base, options) {
-    return new BasicMock(base, options);
+  var BasicMockFactory = function(baseUrl, options) {
+    return new BasicMock(baseUrl, options);
   };
   return BasicMockFactory;
 }]);

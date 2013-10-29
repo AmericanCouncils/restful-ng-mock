@@ -2,7 +2,7 @@
 * restful-ng-mock JavaScript Library
 * https://github.com/AmericanCouncils/restful-ng-mock/ 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 10/29/2013 11:19
+* Compiled At: 10/29/2013 11:26
 ***********************************************/
 (function(window) {
 'use strict';
@@ -23,12 +23,12 @@ function($httpBackend) {
     debug: false
   };
 
-  var BasicMock = function (base, options) {
-    if (!(/^\/[\w\-]+(\/[\w\-]+|\/\?)*$/).test(base)) {
-      throw 'Invalid base for resourceMock: "' + base + '".';
+  var BasicMock = function (baseUrl, options) {
+    if (!(/^\/[\w\-]+(\/[\w\-]+|\/\?)*$/).test(baseUrl)) {
+      throw 'Invalid baseUrl for resourceMock: "' + baseUrl + '".';
     }
 
-    this.base = base;
+    this.baseUrl = baseUrl;
     this.options = angular.extend({}, DEFAULT_OPTIONS);
     this.setOptions(options || {});
   };
@@ -62,7 +62,7 @@ function($httpBackend) {
     },
 
     route: function(method, pattern, func) {
-      var fullPattern = this.base + pattern;
+      var fullPattern = this.baseUrl + pattern;
       var urlPattern = fullPattern
         .replace('/', '\\/', 'g')
         .replace('?', '([\\w\\-]+)');
@@ -91,8 +91,8 @@ function($httpBackend) {
     }
   };
 
-  var BasicMockFactory = function(base, options) {
-    return new BasicMock(base, options);
+  var BasicMockFactory = function(baseUrl, options) {
+    return new BasicMock(baseUrl, options);
   };
   return BasicMockFactory;
 }]);
@@ -118,18 +118,15 @@ function($httpBackend) {
   };
 
   var ResourceMock = function (baseUrl, dataSource, options) {
-    if (!(/^\/[\w\-]+(\/[\w\-]+|\/\?)*$/).test(baseUrl)) {
-      throw 'Invalid baseUrl for resourceMock: "' + baseUrl + '".';
-    }
     this.baseUrl = baseUrl;
     this.dataSource = dataSource || {};
 
     this.options = angular.extend({}, DEFAULT_OPTIONS);
     this.setOptions(options || {});
 
-    var requiredSegments = 0;
+    var requiredParams = 0;
     for (var cidx = 0; cidx < baseUrl.length; ++cidx) {
-      if (baseUrl.charAt(cidx) === '?') { ++requiredSegments; }
+      if (baseUrl.charAt(cidx) === '?') { ++requiredParams; }
     }
 
     var urlPattern = baseUrl
@@ -199,11 +196,11 @@ function($httpBackend) {
 
       var data;
       var plural = false;
-      if (handlers.atRoot && itemIds.length === requiredSegments) {
+      if (handlers.atRoot && itemIds.length === requiredParams) {
         plural = (method === 'GET');
         data =
           handlers.atRoot.call(me, itemIds, url, body, headers);
-      } else if (handlers.atItem && itemIds.length > requiredSegments) {
+      } else if (handlers.atItem && itemIds.length > requiredParams) {
         var superIds = itemIds.slice(0, -1);
         var itemId = itemIds[itemIds.length-1];
         data =
