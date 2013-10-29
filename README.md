@@ -41,7 +41,7 @@ function(basicMock) {
   mock.route('POST', '/?/form_voltron', function(request) {
     // request.url is a purl url object, see https://github.com/allmarkedup/purl
     if (request.url.param('password') == 'abc123') {
-      // Require that the URL was something like /items/123/form_voltron?password=abc123
+      // Require that the URL was like /items/123/form_voltron?password=abc123
       return { result: "I'll form the head!", content: JSON.parse(request.body) };
     } else {
       // Return HttpError for non-200 responses
