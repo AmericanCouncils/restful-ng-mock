@@ -108,8 +108,8 @@ peopleMock.route('POST', '/?/jump', function(request) {
 There are various options you can enable on both types of mock. These can be set with an additional argument to the constructor, or by calling the `setOptions` method:
 
 ```js
-var oneMock = basicMock(`/foo', { debug: true });
-var twoMock = resourceMock(`/bar', stuff);
+var oneMock = basicMock('/foo', { debug: true });
+var twoMock = resourceMock('/bar', stuff);
 twoMock.setOptions({ httpResponseInfoLabel: 'response' });
 ```
 
