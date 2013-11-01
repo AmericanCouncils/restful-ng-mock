@@ -33,13 +33,6 @@ function(basicMock) {
     this.deleteRoute = this.route('DELETE', '/?', function(request) {
       return this.deleteAction(request);
     });
-
-    this.singletonRoutes = [
-      this.showRoute,
-      this.createRoute,
-      this.updateRoute,
-      this.deleteRoute
-    ];
   }
 
   // ResourceMock extends BasicMock
@@ -59,14 +52,18 @@ function(basicMock) {
     return new ResourceMock(this._baseUrl + '/?' + subUrl, subDataSource, options);
   };
 
-  ResourceMock.prototype.addIndexFilter = function(field) {
+  ResourceMock.prototype.addIndexFilter = function(field, filterFunc) {
+    filterFunc = filterFunc || function(arg, obj) {
+      return obj[field] === arg;
+    };
+
     this.indexRoute.addPostProc(function(data, request) {
       if (!request.url.param(field)) { return; }
 
       var newData = [];
       var key;
       for (key in data) {
-        if (data[key][field] === request.url.param(field)) {
+        if (filterFunc(request.url.param(field), data[key])) {
           newData.push(data[key]);
         }
       }
@@ -95,14 +92,24 @@ function(basicMock) {
     });
   };
 
+  ResourceMock.prototype.addSingletonPostProcs = function(p) {
+    var singletonRoutes = [
+      this.showRoute,
+      this.createRoute,
+      this.updateRoute,
+      this.deleteRoute
+    ];
+    angular.forEach(singletonRoutes, function(route) {
+      route.addPostProc(p);
+    });
+  };
+
   ResourceMock.prototype.addLabeller = function(singleLabel, pluralLabel) {
     if (singleLabel) {
-      angular.forEach(this.singletonRoutes, function(route) {
-        route.addPostProc(function(data) {
-          var r = {};
-          r[singleLabel] = data;
-          return r;
-        });
+      this.addSingletonPostProcs(function(data) {
+        var r = {};
+        r[singleLabel] = data;
+        return r;
       });
     }
 

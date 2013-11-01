@@ -113,13 +113,21 @@ describe('resourceMock', function () {
       expect(result.data).toEqual(objToArray(books).slice(1));
     });
 
-    it('filters index results with addIndexFilter', function () {
+    it('filters index results with addIndexFilter in a sensible default way', function () {
       grabHttpResult($http.get('/books?title=Anathem'));
       expect(result.data).toEqual(objToArray(books));
 
       booksMock.addIndexFilter('title');
       grabHttpResult($http.get('/books?title=Anathem'));
       expect(result.data).toEqual([books[2]]);
+    });
+
+    it('filters index results with addIndexFilter and custom filter funcs', function () {
+      booksMock.addIndexFilter('authorInitial', function(arg, object) {
+        return object.author.charAt(0) === arg;
+      });
+      grabHttpResult($http.get('/books?authorInitial=E'));
+      expect(result.data).toEqual([books[1]]);
     });
 
     describe('with response labellers', function () {
