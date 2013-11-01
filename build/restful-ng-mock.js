@@ -2,7 +2,7 @@
 * restful-ng-mock JavaScript Library
 * https://github.com/AmericanCouncils/restful-ng-mock/ 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 11/01/2013 13:17
+* Compiled At: 11/01/2013 13:54
 ***********************************************/
 (function(window) {
 'use strict';
@@ -57,11 +57,11 @@ function($httpBackend) {
   // Nested class RouteOptions
   BasicMock.prototype.RouteOptions = (function() {
     function RouteOptions() {
-      this.filters = [];
+      this.postProcs = [];
     }
 
-    RouteOptions.prototype.addFilter = function(fn) {
-      this.filters.push(fn);
+    RouteOptions.prototype.addPostProc = function(fn) {
+      this.postProcs.push(fn);
     };
 
     return RouteOptions;
@@ -150,12 +150,14 @@ function($httpBackend) {
       function(method, rawUrl, body, headers) {
         var purlUrl = purl(rawUrl, true);
         var params = re.exec(purlUrl.attr('path')).slice(1);
-        var request = new me.HttpRequest(params, method, rawUrl, purlUrl, body, headers);
-        var r = func.call(me, request);
-        angular.forEach(routeOptions.filters, function(f) {
-          f.call(this, r, request);
+        var request = new me.HttpRequest(
+          params, method, rawUrl, purlUrl, body, headers
+        );
+        var data = func.call(me, request);
+        angular.forEach(routeOptions.postProcs, function(f) {
+          data = f.call(me, data, request);
         });
-        return me._buildResponse(r, request);
+        return me._buildResponse(data, request);
       }
     );
 
@@ -196,27 +198,27 @@ function(basicMock) {
       if (baseUrl.charAt(cidx) === '?') { ++this.requiredParams; }
     }
 
-    this.route('GET', '', function(request) {
+    this._indexRoute = this.route('GET', '', function(request) {
       var response = this.indexAction(request);
       return this._labelEncap(true, response);
     });
 
-    this.route('GET', '/?', function(request) {
+    this._showRoute = this.route('GET', '/?', function(request) {
       var response = this.showAction(request);
       return this._labelEncap(false, response);
     });
 
-    this.route('POST', '', function(request) {
+    this._createRoute = this.route('POST', '', function(request) {
       var response = this.createAction(request);
       return this._labelEncap(false, response);
     });
 
-    this.route('PUT', '/?', function(request) {
+    this._updateRoute = this.route('PUT', '/?', function(request) {
       var response = this.updateAction(request);
       return this._labelEncap(false, response);
     });
 
-    this.route('DELETE', '/?', function(request) {
+    this._deleteRoute = this.route('DELETE', '/?', function(request) {
       var response = this.deleteAction(request);
       return this._labelEncap(false, response);
     });
@@ -268,8 +270,29 @@ function(basicMock) {
     return new ResourceMock(this._baseUrl + '/?' + subUrl, subDataSource, options);
   };
 
+  ResourceMock.prototype.addIndexFilter = function(field) {
+    this._indexRoute.addPostProc(function(data, request) {
+      if (!request.url.param(field)) { return; }
+
+      // TODO: Test me
+      if (this.options.collectionLabel) {
+        data = data[this.options.collectionLabel];
+      }
+
+      var newData = [];
+      var key;
+      for (key in data) {
+        if (data[key][field] === request.url.param(field)) {
+          newData.push(data[key]);
+        }
+      }
+      return newData;
+    });
+  };
+
   // Returns the object used for storing mock resource items
   ResourceMock.prototype.getStorage = function(ids, autoCreate) {
+    ids = ids || [];
     autoCreate = autoCreate || false;
     var d = this.dataSource;
     for (var i = 0; i < ids.length; ++i) {
@@ -289,35 +312,36 @@ function(basicMock) {
 
   ResourceMock.prototype.indexAction = function(request) {
     var storage = this.getStorage(request.pathArgs);
+    if (!storage) { return; }
 
-    if (storage) {
-      var keys = [];
-      angular.forEach(storage, function(v, k) {
-        if (/^\d+$/.test(k)) {
-          k = parseInt(k, 10);
-        }
-        keys.push(k);
-      });
-      keys.sort();
-
-      if (this.options['skipArgumentName']) {
-        var skip = parseInt(request.url.param(this.options['skipArgumentName']), 10);
-        if (skip) {
-          keys = keys.slice(skip);
-        }
+    var keys = [];
+    angular.forEach(storage, function(v, k) {
+      if (/^\d+$/.test(k)) {
+        k = parseInt(k, 10);
       }
+      keys.push(k);
+    });
+    keys.sort();
 
-      if (this.options['limitArgumentName']) {
-        var lim = parseInt(request.url.param(this.options['limitArgumentName']), 10);
-        if (lim) {
-          keys = keys.slice(0, lim);
-        }
+    // TODO: This has to happen *after* filtering!
+    if (this.options['skipArgumentName']) {
+      var skip = parseInt(request.url.param(this.options['skipArgumentName']), 10);
+      if (skip) {
+        keys = keys.slice(skip);
       }
-
-      var a = [];
-      angular.forEach(keys, function(k) { a.push(storage[k]); });
-      return a;
     }
+
+    // TODO: This has to happen *after* filtering!
+    if (this.options['limitArgumentName']) {
+      var lim = parseInt(request.url.param(this.options['limitArgumentName']), 10);
+      if (lim) {
+        keys = keys.slice(0, lim);
+      }
+    }
+
+    var a = [];
+    angular.forEach(keys, function(k) { a.push(storage[k]); });
+    return a;
   };
 
   ResourceMock.prototype.showAction = function(request) {

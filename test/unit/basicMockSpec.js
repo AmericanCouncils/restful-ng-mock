@@ -103,40 +103,40 @@ describe('basicMock', function () {
       expect(result.data).toEqual({ product: 80 });
     });
 
-    describe('with a filter', function () {
-      var filterFunc;
+    describe('with a postProc', function () {
+      var postProcFunc;
       beforeEach(function() {
-        filterFunc = jasmine.createSpy('filter');
-        routes['a'].addFilter(filterFunc);
+        postProcFunc = jasmine.createSpy('postProc');
+        routes['a'].addPostProc(postProcFunc);
       });
 
-      it('calls filters when route is activated', function () {
+      it('calls postProcs when route is activated', function () {
         grabHttpResult($http.get('/foo'));
-        expect(filterFunc).toHaveBeenCalledWith(
+        expect(postProcFunc).toHaveBeenCalledWith(
           { foo: 'narf' },
           jasmine.any(basicMock.classFn.prototype.HttpRequest)
         );
       });
 
-      it('allows filters to mutate result', function () {
-        filterFunc.andCallFake(function(r) {
-          r.foo = 'narfnarf';
+      it('allows postProcs to mutate result', function () {
+        postProcFunc.andCallFake(function(r) {
+          return {bar: 'narfnarf'};
         });
         grabHttpResult($http.get('/foo'));
-        expect(result.data).toEqual({ foo: 'narfnarf' });
+        expect(result.data).toEqual({ bar: 'narfnarf' });
       });
 
-      it('calls filters in sequence', function () {
-        filterFunc.andCallFake(function(r) {
-          r.foo = 'narfnarf';
+      it('calls postProcs in sequence', function () {
+        postProcFunc.andCallFake(function(r) {
+          return {foo: r.foo + '123'};
         });
-        var filterFunc2 = jasmine.createSpy('filter2')
-        filterFunc2.andCallFake(function(r) {
-          r.foo = r.foo + r.foo;
+        var postProcFunc2 = jasmine.createSpy('postProc2')
+        postProcFunc2.andCallFake(function(r) {
+          return {foo: r.foo + r.foo};
         });
-        routes['a'].addFilter(filterFunc2);
+        routes['a'].addPostProc(postProcFunc2);
         grabHttpResult($http.get('/foo'));
-        expect(result.data).toEqual({ foo: 'narfnarfnarfnarf' });
+        expect(result.data).toEqual({ foo: 'narf123narf123' });
       });
     });
 

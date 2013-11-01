@@ -47,11 +47,11 @@ function($httpBackend) {
   // Nested class RouteOptions
   BasicMock.prototype.RouteOptions = (function() {
     function RouteOptions() {
-      this.filters = [];
+      this.postProcs = [];
     }
 
-    RouteOptions.prototype.addFilter = function(fn) {
-      this.filters.push(fn);
+    RouteOptions.prototype.addPostProc = function(fn) {
+      this.postProcs.push(fn);
     };
 
     return RouteOptions;
@@ -140,12 +140,14 @@ function($httpBackend) {
       function(method, rawUrl, body, headers) {
         var purlUrl = purl(rawUrl, true);
         var params = re.exec(purlUrl.attr('path')).slice(1);
-        var request = new me.HttpRequest(params, method, rawUrl, purlUrl, body, headers);
-        var r = func.call(me, request);
-        angular.forEach(routeOptions.filters, function(f) {
-          f.call(this, r, request);
+        var request = new me.HttpRequest(
+          params, method, rawUrl, purlUrl, body, headers
+        );
+        var data = func.call(me, request);
+        angular.forEach(routeOptions.postProcs, function(f) {
+          data = f.call(me, data, request);
         });
-        return me._buildResponse(r, request);
+        return me._buildResponse(data, request);
       }
     );
 

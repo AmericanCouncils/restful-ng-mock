@@ -113,6 +113,15 @@ describe('resourceMock', function () {
       expect(result.data).toEqual(objToArray(books).slice(1));
     });
 
+    it('filters index results with sensible default behavior', function () {
+      grabHttpResult($http.get('/books?title=Anathem'));
+      expect(result.data).toEqual(objToArray(books));
+
+      booksMock.addIndexFilter('title');
+      grabHttpResult($http.get('/books?title=Anathem'));
+      expect(result.data).toEqual([books[2]]);
+    });
+
     describe('with labelled responses', function () {
       var otherJunk;
       beforeEach(function() {
