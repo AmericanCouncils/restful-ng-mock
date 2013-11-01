@@ -47,24 +47,25 @@ describe('basicMock', function () {
 
   describe('instance', function () {
     var mock;
+    var routes = {};
     beforeEach(function() {
       mock = basicMock('/foo');
-      mock.route('GET', '', function () {
+      routes['a'] = mock.route('GET', '', function () {
         return { foo: 'narf' };
       });
-      mock.route('GET', '/bar/?', function (request) {
+      routes['b'] = mock.route('GET', '/bar/?', function (request) {
         return { foo: 'bar' + request.pathArgs[0] };
       });
-      mock.route('GET', '/tripleParam', function (request) {
+      routes['c'] = mock.route('GET', '/tripleParam', function (request) {
         return { product: parseInt(request.url.param('number')) * 3 };
       });
-      mock.route('POST', '/doubleJson', function (request) {
+      routes['d'] = mock.route('POST', '/doubleJson', function (request) {
         return { product: request.body.number * 2 };
       });
-      mock.route('POST', '/quadrupleRaw', function (request) {
+      routes['e'] = mock.route('POST', '/quadrupleRaw', function (request) {
         return { product: parseInt(request.body) * 4 };
       });
-      mock.route('POST', '/fail', function () {
+      routes['f'] = mock.route('POST', '/fail', function () {
         return new this.HttpError(400, "Nope.");
       });
     });
@@ -100,6 +101,30 @@ describe('basicMock', function () {
     it('accepts string data and passes it through to handler function', function () {
       grabHttpResult($http.post('/foo/quadrupleRaw', "20"));
       expect(result.data).toEqual({ product: 80 });
+    });
+
+    describe('with a filter', function () {
+      var filterFunc;
+      beforeEach(function() {
+        filterFunc = jasmine.createSpy('filter');
+        routes['a'].addFilter(filterFunc);
+      });
+
+      it('calls filters when route is activated', function () {
+        grabHttpResult($http.get('/foo'));
+        expect(filterFunc).toHaveBeenCalledWith(
+          { foo: 'narf' },
+          jasmine.any(basicMock.classFn.prototype.HttpRequest)
+        );
+      });
+
+      it('allows filters to mutate result', function () {
+        filterFunc.andCallFake(function(r) {
+          r.foo = 'narfnarf';
+        });
+        grabHttpResult($http.get('/foo'));
+        expect(result.data).toEqual({ foo: 'narfnarf' });
+      });
     });
 
     describe('with response info inclusion enabled', function () {

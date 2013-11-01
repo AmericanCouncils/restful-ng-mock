@@ -2,7 +2,7 @@
 * restful-ng-mock JavaScript Library
 * https://github.com/AmericanCouncils/restful-ng-mock/ 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 11/01/2013 12:42
+* Compiled At: 11/01/2013 13:13
 ***********************************************/
 (function(window) {
 'use strict';
@@ -52,6 +52,19 @@ function($httpBackend) {
       this.headers = headers;
     }
     return HttpRequest;
+  })();
+
+  // Nested class RouteOptions
+  BasicMock.prototype.RouteOptions = (function() {
+    function RouteOptions() {
+      this.filters = [];
+    }
+
+    RouteOptions.prototype.addFilter = function(fn) {
+      this.filters.push(fn);
+    };
+
+    return RouteOptions;
   })();
 
   BasicMock.prototype.DEFAULT_OPTIONS = {
@@ -130,6 +143,8 @@ function($httpBackend) {
       .replace(/\?/g, '([\\w\\-]+)');
     var re = new RegExp( '^' + urlPattern  + '(?:\\?.*)?$');
 
+    var routeOptions = new this.RouteOptions();
+
     var me = this;
     $httpBackend.when(method, re).respond(
       function(method, rawUrl, body, headers) {
@@ -137,9 +152,14 @@ function($httpBackend) {
         var params = re.exec(purlUrl.attr('path')).slice(1);
         var request = new me.HttpRequest(params, method, rawUrl, purlUrl, body, headers);
         var r = func.call(me, request);
+        angular.forEach(routeOptions.filters, function(f) {
+          f.call(this, r, request);
+        });
         return me._buildResponse(r, request);
       }
     );
+
+    return routeOptions;
   };
 
   BasicMock.prototype.setOptions = function(opts) {
