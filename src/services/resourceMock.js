@@ -5,7 +5,7 @@ angular.module('restfulNgMock')
 'basicMock',
 function(basicMock) {
   function ResourceMock(baseUrl, dataSource, options) {
-    ResourceMock._super.constructor(baseUrl, options);
+    ResourceMock._super.constructor.call(this, baseUrl, options);
 
     this.dataSource = dataSource || {};
 

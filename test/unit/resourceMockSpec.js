@@ -114,10 +114,18 @@ describe('resourceMock', function () {
     });
 
     describe('with labelled responses', function () {
+      var otherJunk;
       beforeEach(function() {
         booksMock.setOptions({
           collectionLabel: 'books',
           singletonLabel: 'book'
+        });
+
+        // Testing to avoid 2013-11-01 bug where mock options collide
+        otherJunk = resourceMock('/other');
+        otherJunk.setOptions({
+          collectionLabel: 'foo',
+          singletonLabel: 'bar'
         });
       });
 
