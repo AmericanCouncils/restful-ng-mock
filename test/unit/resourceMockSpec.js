@@ -113,7 +113,7 @@ describe('resourceMock', function () {
       expect(result.data).toEqual(objToArray(books).slice(1));
     });
 
-    it('filters index results with sensible default behavior', function () {
+    it('filters index results with addIndexFilter', function () {
       grabHttpResult($http.get('/books?title=Anathem'));
       expect(result.data).toEqual(objToArray(books));
 
@@ -122,20 +122,10 @@ describe('resourceMock', function () {
       expect(result.data).toEqual([books[2]]);
     });
 
-    describe('with labelled responses', function () {
+    describe('with response labellers', function () {
       var otherJunk;
       beforeEach(function() {
-        booksMock.setOptions({
-          collectionLabel: 'books',
-          singletonLabel: 'book'
-        });
-
-        // Testing to avoid 2013-11-01 bug where mock options collide
-        otherJunk = resourceMock('/other');
-        otherJunk.setOptions({
-          collectionLabel: 'foo',
-          singletonLabel: 'bar'
-        });
+        booksMock.addLabeller('book', 'books');
       });
 
       it('encapsulates index results', function () {
@@ -224,10 +214,7 @@ describe('resourceMock', function () {
 
     describe('with pagination support', function () {
       beforeEach(function() {
-        booksMock.setOptions({
-          skipArgumentName: "skip",
-          limitArgumentName: "limit"
-        });
+        booksMock.addIndexPagination();
       });
 
       it('skips the first N results', function () {

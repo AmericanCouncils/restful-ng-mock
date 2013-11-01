@@ -52,6 +52,7 @@ function($httpBackend) {
 
     RouteOptions.prototype.addPostProc = function(fn) {
       this.postProcs.push(fn);
+      return this;
     };
 
     return RouteOptions;
@@ -145,7 +146,9 @@ function($httpBackend) {
         );
         var data = func.call(me, request);
         angular.forEach(routeOptions.postProcs, function(f) {
-          data = f.call(me, data, request);
+          if (data && !(data instanceof BasicMock.prototype.HttpError)) {
+            data = f.call(me, data, request);
+          }
         });
         return me._buildResponse(data, request);
       }

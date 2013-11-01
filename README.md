@@ -58,6 +58,22 @@ function(basicMock) {
 }]);
 ```
 
+## Post-processing
+
+The `route` method returns an object that you can use to further customize the mock's behavior. Use the `addPostProc` method to add a function which accepts the data returned by the route implementation and can return a modified version of that data:
+
+```js
+var route = itemsMock.route('GET', '', function() {
+  return items;
+});
+route.addPostProc(data, function(data, request) {
+  data.reverse();
+  return data;
+}
+```
+
+This is convenient when you are doing the same or similar transformations in many different places in your mock.
+
 ## Resource mocks
 
 Often, a server may be implementing a database-like service with the usual CRUD actions. There is a convenience service `resourceMock` that makes this easier:
@@ -94,7 +110,6 @@ peopleMock.indexAction = function(request) {
   return people;
 }
 ```
-
 The resource mock also supports all the same methods as `basicMock`, which is convenient for adding RPC-ish stuff and other not-strictly-RESTful methods:
 
 ```js
@@ -102,6 +117,14 @@ peopleMock.route('POST', '/?/jump', function(request) {
   return { result: "I jumped! Now what?" };
 });
 ```
+
+The automatic routes themselves are available as attributes under the names `indexRoute`, `showRoute`, etc., which means you can apply post processors. There are some convenience
+methods on resourceMock for common post-processing situations:
+
+* `addIndexFilter(fieldName)`: Allows you to specify a GET argument to filter results by a particular field value.
+* `addIndexPagination(skipName, limitName)`: Specify GET arguments used to retrieve a subset of the results. The `skipName` argument slices off results from the beginning of the array, and the `limitName` argument sets a maximum number of results to return; if you don't specify these, they are simply "skip" and "limit" by default.
+* `addLabeller(singleLabel, pluralLabel)`: Puts the data returned under a key in a containing object. The `pluralLabel` is used for index results, and the `singleLabel` is used for the results from all other actions. Note that this must be applied after the other index-related filters above.
+
 
 ## Options
 
@@ -111,16 +134,8 @@ There are various options you can enable on both types of mock. These can be set
 var oneMock = basicMock('/foo', { debug: true });
 var twoMock = resourceMock('/bar', stuff);
 twoMock.setOptions({ httpResponseInfoLabel: 'response' });
-```
 
 These options are available for both `basicMock` and `resourceMock`:
 
 * `debug`: If set to `true`, then all HTTP responses will be logged with console.log. Alternately, you can provide a function here, and it will be called with the request object, the response info object, and the response data.
 * `httpResponseInfoLabel`: If set to a string, then HTTP response info will be embedded in all JSON responses under this key. The response info object includes the HTTP code and a status message.
-
-These options are only for `resourceMock`:
-
-* `collectionLabel`: A string key, under which responses from `indexAction` will be wrapped. For example, if you set this to `items`, then the response from index requests will be a JSON object like `{ items: [....] }`.
-* `singletonLabel`: Similar to `collectionLabel`, but for the create, update, show, and delete actions.
-* `skipArgumentName`: The name of a GET query parameter that is used to skip ahead in the results returned by `indexAction`. Usually used with:
-* `limitArgumentName`: The name of a GET query parameter that sets a maximum number of results to be returned by `indexAction`. Together with `skipArgumentName`, this allows you to support a common style of paginated results. Note that both of these are implemented by the default `indexAction`; if you provide a custom `indexAction` and do not implement it in terms of the default one, then these options have no impact.

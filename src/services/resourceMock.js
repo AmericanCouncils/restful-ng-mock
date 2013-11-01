@@ -14,30 +14,32 @@ function(basicMock) {
       if (baseUrl.charAt(cidx) === '?') { ++this.requiredParams; }
     }
 
-    this._indexRoute = this.route('GET', '', function(request) {
-      var response = this.indexAction(request);
-      return this._labelEncap(true, response);
+    this.indexRoute = this.route('GET', '', function(request) {
+      return this.indexAction(request);
     });
 
-    this._showRoute = this.route('GET', '/?', function(request) {
-      var response = this.showAction(request);
-      return this._labelEncap(false, response);
+    this.showRoute = this.route('GET', '/?', function(request) {
+      return this.showAction(request);
     });
 
-    this._createRoute = this.route('POST', '', function(request) {
-      var response = this.createAction(request);
-      return this._labelEncap(false, response);
+    this.createRoute = this.route('POST', '', function(request) {
+      return this.createAction(request);
     });
 
-    this._updateRoute = this.route('PUT', '/?', function(request) {
-      var response = this.updateAction(request);
-      return this._labelEncap(false, response);
+    this.updateRoute = this.route('PUT', '/?', function(request) {
+      return this.updateAction(request);
     });
 
-    this._deleteRoute = this.route('DELETE', '/?', function(request) {
-      var response = this.deleteAction(request);
-      return this._labelEncap(false, response);
+    this.deleteRoute = this.route('DELETE', '/?', function(request) {
+      return this.deleteAction(request);
     });
+
+    this.singletonRoutes = [
+      this.showRoute,
+      this.createRoute,
+      this.updateRoute,
+      this.deleteRoute
+    ];
   }
 
   // ResourceMock extends BasicMock
@@ -53,47 +55,13 @@ function(basicMock) {
   // which reference their ResourceMock "super".
   ResourceMock.prototype.parent  = ResourceMock.prototype;
 
-  ResourceMock.prototype.DEFAULT_OPTIONS = angular.extend(
-    {},
-    ResourceMock._super.DEFAULT_OPTIONS,
-    {
-      collectionLabel: false,
-      singletonLabel: false,
-      skipArgumentName: false,
-      limitArgumentName: false
-    }
-  );
-
-  ResourceMock.prototype._labelEncap = function(plural, data) {
-    if (data && !(data instanceof this.HttpError)) {
-      var label = null;
-      if (plural && this.options.collectionLabel) {
-        label = this.options.collectionLabel;
-      } else if (!plural && this.options.singletonLabel) {
-        label = this.options.singletonLabel;
-      }
-      if (label) {
-        var encapData = data;
-        data = {};
-        data[label] = encapData;
-      }
-    }
-
-    return data;
-  };
-
   ResourceMock.prototype.subResourceMock = function(subUrl, subDataSource, options) {
     return new ResourceMock(this._baseUrl + '/?' + subUrl, subDataSource, options);
   };
 
   ResourceMock.prototype.addIndexFilter = function(field) {
-    this._indexRoute.addPostProc(function(data, request) {
+    this.indexRoute.addPostProc(function(data, request) {
       if (!request.url.param(field)) { return; }
-
-      // TODO: Test me
-      if (this.options.collectionLabel) {
-        data = data[this.options.collectionLabel];
-      }
 
       var newData = [];
       var key;
@@ -104,6 +72,49 @@ function(basicMock) {
       }
       return newData;
     });
+
+    return this;
+  };
+
+  ResourceMock.prototype.addIndexPagination = function(skipName, limitName) {
+    skipName = skipName || 'skip';
+    limitName = limitName || 'limit';
+
+    this.indexRoute.addPostProc(function(data, request) {
+      var skip = parseInt(request.url.param(skipName), 10);
+      if (skip) {
+        data = data.slice(skip);
+      }
+
+      var lim = parseInt(request.url.param(limitName), 10);
+      if (lim) {
+        data = data.slice(0, lim);
+      }
+
+      return data;
+    });
+  };
+
+  ResourceMock.prototype.addLabeller = function(singleLabel, pluralLabel) {
+    if (singleLabel) {
+      angular.forEach(this.singletonRoutes, function(route) {
+        route.addPostProc(function(data) {
+          var r = {};
+          r[singleLabel] = data;
+          return r;
+        });
+      });
+    }
+
+    if (pluralLabel) {
+    this.indexRoute.addPostProc(function(data) {
+        var r = {};
+        r[pluralLabel] = data;
+        return r;
+      });
+    }
+
+    return this;
   };
 
   // Returns the object used for storing mock resource items
@@ -138,22 +149,6 @@ function(basicMock) {
       keys.push(k);
     });
     keys.sort();
-
-    // TODO: This has to happen *after* filtering!
-    if (this.options['skipArgumentName']) {
-      var skip = parseInt(request.url.param(this.options['skipArgumentName']), 10);
-      if (skip) {
-        keys = keys.slice(skip);
-      }
-    }
-
-    // TODO: This has to happen *after* filtering!
-    if (this.options['limitArgumentName']) {
-      var lim = parseInt(request.url.param(this.options['limitArgumentName']), 10);
-      if (lim) {
-        keys = keys.slice(0, lim);
-      }
-    }
 
     var a = [];
     angular.forEach(keys, function(k) { a.push(storage[k]); });
