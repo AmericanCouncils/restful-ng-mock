@@ -125,6 +125,19 @@ describe('basicMock', function () {
         grabHttpResult($http.get('/foo'));
         expect(result.data).toEqual({ foo: 'narfnarf' });
       });
+
+      it('calls filters in sequence', function () {
+        filterFunc.andCallFake(function(r) {
+          r.foo = 'narfnarf';
+        });
+        var filterFunc2 = jasmine.createSpy('filter2')
+        filterFunc2.andCallFake(function(r) {
+          r.foo = r.foo + r.foo;
+        });
+        routes['a'].addFilter(filterFunc2);
+        grabHttpResult($http.get('/foo'));
+        expect(result.data).toEqual({ foo: 'narfnarfnarfnarf' });
+      });
     });
 
     describe('with response info inclusion enabled', function () {
