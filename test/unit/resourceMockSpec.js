@@ -130,6 +130,12 @@ describe('resourceMock', function () {
       expect(result.data).toEqual([books[1]]);
     });
 
+    it('filters index results with addIndexArrayFilter', function () {
+      booksMock.addIndexArrayFilter('id');
+      grabHttpResult($http.get('/books?id=1,3'));
+      expect(result.data).toEqual([books[1], books[3]]);
+    });
+
     describe('with response labellers', function () {
       var otherJunk;
       beforeEach(function() {

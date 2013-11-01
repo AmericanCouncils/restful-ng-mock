@@ -122,6 +122,7 @@ The automatic routes themselves are available as attributes under the names `ind
 methods on resourceMock for common post-processing situations:
 
 * `addIndexFilter(fieldName[, filterFunc])`: Allows you to specify a GET argument to filter results by a particular field value. You can optionally specify a filter function, which is given the GET argument value and a data object, and should return true if the object matches the filter specified by the value.
+* `addIndexArrayFilter(fieldName[, sep[, filterFunc]])`: A filter that checks against a list of acceptable values. The default separator is a comma.
 * `addIndexPagination([skipName, limitName])`: Specify GET arguments used to retrieve a subset of the results. The `skipName` argument slices off results from the beginning of the array, and the `limitName` argument sets a maximum number of results to return; if you don't specify these, they are simply "skip" and "limit" by default.
 * `addLabeller(singleLabel, pluralLabel)`: Puts the data returned under a key in a containing object. The `pluralLabel` is used for index results, and the `singleLabel` is used for the results from all other actions. Note that this must be applied after the other index-related filters above.
 * `addSingletonPostProcs(func)`: Apply the same post processing function to the show, update, create, and destroy actions.

@@ -2,7 +2,7 @@
 * restful-ng-mock JavaScript Library
 * https://github.com/AmericanCouncils/restful-ng-mock/ 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 11/01/2013 14:40
+* Compiled At: 11/01/2013 14:49
 ***********************************************/
 (function(window) {
 'use strict';
@@ -241,7 +241,7 @@ function(basicMock) {
 
   ResourceMock.prototype.addIndexFilter = function(field, filterFunc) {
     filterFunc = filterFunc || function(arg, obj) {
-      return obj[field] === arg;
+      return obj[field].toString() === arg.toString();
     };
 
     this.indexRoute.addPostProc(function(data, request) {
@@ -252,6 +252,33 @@ function(basicMock) {
       for (key in data) {
         if (filterFunc(request.url.param(field), data[key])) {
           newData.push(data[key]);
+        }
+      }
+      return newData;
+    });
+
+    return this;
+  };
+
+  ResourceMock.prototype.addIndexArrayFilter = function(field, sep, filterFunc) {
+    sep = sep || ',';
+
+    filterFunc = filterFunc || function(arg, obj) {
+      return obj[field].toString() === arg.toString();
+    };
+
+    this.indexRoute.addPostProc(function(data, request) {
+      if (!request.url.param(field)) { return; }
+
+      var newData = [];
+      var key, v;
+      var values = request.url.param(field).split(sep);
+      for (key in data) {
+        for (v in values) {
+          if (filterFunc(values[v], data[key])) {
+            newData.push(data[key]);
+            break;
+          }
         }
       }
       return newData;
