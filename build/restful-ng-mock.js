@@ -2,7 +2,7 @@
 * restful-ng-mock JavaScript Library
 * https://github.com/AmericanCouncils/restful-ng-mock/ 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 11/22/2013 13:16
+* Compiled At: 11/22/2013 14:11
 ***********************************************/
 (function(window) {
 'use strict';
@@ -89,7 +89,7 @@ function($httpBackend) {
       }
     }
 
-    if (angular.isObject(data) && this.options.httpResponseInfoLabel) {
+    if (angular.isObject(data) && !angular.isArray(data) && this.options.httpResponseInfoLabel) {
       data[this.options.httpResponseInfoLabel] = responseInfo;
     }
 
@@ -325,7 +325,7 @@ function(basicMock) {
     }
 
     if (pluralLabel) {
-    this.indexRoute.addPostProc(function(data) {
+      this.indexRoute.addPostProc(function(data) {
         var r = {};
         r[pluralLabel] = data;
         return r;

@@ -79,7 +79,7 @@ function($httpBackend) {
       }
     }
 
-    if (angular.isObject(data) && this.options.httpResponseInfoLabel) {
+    if (angular.isObject(data) && !angular.isArray(data) && this.options.httpResponseInfoLabel) {
       data[this.options.httpResponseInfoLabel] = responseInfo;
     }
 

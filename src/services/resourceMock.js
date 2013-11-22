@@ -141,7 +141,7 @@ function(basicMock) {
     }
 
     if (pluralLabel) {
-    this.indexRoute.addPostProc(function(data) {
+      this.indexRoute.addPostProc(function(data) {
         var r = {};
         r[pluralLabel] = data;
         return r;
