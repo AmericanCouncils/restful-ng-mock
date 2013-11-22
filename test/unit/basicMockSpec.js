@@ -68,6 +68,9 @@ describe('basicMock', function () {
       routes['f'] = mock.route('POST', '/fail', function () {
         return new this.HttpError(400, "Nope.");
       });
+      routes['g'] = mock.route('GET', '/stuff', function () {
+        return [1, 2, 3];
+      });
     });
 
     it('responds on simple routes', function () {
@@ -101,6 +104,11 @@ describe('basicMock', function () {
     it('accepts string data and passes it through to handler function', function () {
       grabHttpResult($http.post('/foo/quadrupleRaw', "20"));
       expect(result.data).toEqual({ product: 80 });
+    });
+
+    it('can accept returned array data', function() {
+      grabHttpResult($http.get('/foo/stuff'));
+      expect(result.data).toEqual([1,2,3]);
     });
 
     describe('with a postProc', function () {
@@ -151,7 +159,13 @@ describe('basicMock', function () {
         expect(result.data).toEqual({ foo: 'narf', response: { code: 200, message: 'OK' }});
       });
 
-      it('encapsulates resposne info in error responses', function () {
+      it('does not include response info in array responses', function () {
+        grabHttpResult($http.get('/foo/stuff'));
+        expect(result.status).toEqual(200);
+        expect(result.data).toEqual([1,2,3]);
+      });
+
+      it('encapsulates response info in error responses', function () {
         grabHttpResult($http.post('/foo/fail'));
         expect(result.status).toEqual(400);
         expect(result.data).toEqual({ response: { code: 400, message: 'Nope.' } });

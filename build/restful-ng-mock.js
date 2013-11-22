@@ -2,7 +2,7 @@
 * restful-ng-mock JavaScript Library
 * https://github.com/AmericanCouncils/restful-ng-mock/ 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 11/01/2013 14:49
+* Compiled At: 11/22/2013 13:16
 ***********************************************/
 (function(window) {
 'use strict';
@@ -89,10 +89,7 @@ function($httpBackend) {
       }
     }
 
-    // TODO: What if response data is not JSON?
-
-    if (this.options.httpResponseInfoLabel) {
-      // TODO: What if the response data is not an object? (e.g. an array)
+    if (angular.isObject(data) && this.options.httpResponseInfoLabel) {
       data[this.options.httpResponseInfoLabel] = responseInfo;
     }
 

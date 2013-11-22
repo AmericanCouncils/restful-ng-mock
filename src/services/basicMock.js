@@ -79,10 +79,7 @@ function($httpBackend) {
       }
     }
 
-    // TODO: What if response data is not JSON?
-
-    if (this.options.httpResponseInfoLabel) {
-      // TODO: What if the response data is not an object? (e.g. an array)
+    if (angular.isObject(data) && this.options.httpResponseInfoLabel) {
       data[this.options.httpResponseInfoLabel] = responseInfo;
     }
 
