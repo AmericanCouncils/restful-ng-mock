@@ -2,7 +2,7 @@
 * restful-ng-mock JavaScript Library
 * https://github.com/AmericanCouncils/restful-ng-mock/ 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 11/22/2013 14:11
+* Compiled At: 03/18/2014 15:04
 ***********************************************/
 (function(window) {
 'use strict';

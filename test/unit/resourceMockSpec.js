@@ -136,6 +136,20 @@ describe('resourceMock', function () {
       expect(result.data).toEqual([books[1], books[3]]);
     });
 
+    describe('with a custom route', function () {
+      beforeEach(function() {
+        booksMock.route('GET', '/?/explode', function (request) {
+          return { state: 'many tiny pieces of paper' };
+        });
+      });
+
+      it('responds on RPC-ish routes as basicMock does', function () {
+        grabHttpResult($http.get('/books/2/explode'));
+        expect(result.status).toEqual(200);
+        expect(result.data).toEqual({state: 'many tiny pieces of paper'});
+      });
+    });
+
     describe('with response labellers', function () {
       var otherJunk;
       beforeEach(function() {
