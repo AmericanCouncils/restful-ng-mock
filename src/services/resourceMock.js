@@ -221,8 +221,8 @@ function(basicMock) {
     }
   };
 
-  var ResourceMockFactory = function(baseUrl, dataSource) {
-    return new ResourceMock(baseUrl, dataSource);
+  var ResourceMockFactory = function(baseUrl, dataSource, options) {
+    return new ResourceMock(baseUrl, dataSource, options);
   };
   ResourceMockFactory.classFn = ResourceMock;
   return ResourceMockFactory;
