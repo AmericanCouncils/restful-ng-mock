@@ -2,7 +2,7 @@
 * restful-ng-mock JavaScript Library
 * https://github.com/AmericanCouncils/restful-ng-mock/ 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 03/06/2016 23:01
+* Compiled At: 03/11/2016 09:27
 ***********************************************/
 (function(window) {
 'use strict';
@@ -14,7 +14,7 @@ angular.module('restfulNgMock')
 .factory('basicMock', [
 '$httpBackend',
 function($httpBackend) {
-  var urlRe = /^((http:\/)?\/[\w\-\.]+|)(\/[\w\-]+|\/\?)*$/;
+  var urlRe = /^((http(s)?:\/)?\/[\w\-\.]+|)(\/[\w\-]+|\/\?)*$/;
   function BasicMock(baseUrl, options) {
     this._baseUrl = baseUrl || '';
     if (!(urlRe.test(this._baseUrl))) {

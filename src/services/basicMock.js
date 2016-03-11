@@ -4,7 +4,7 @@ angular.module('restfulNgMock')
 .factory('basicMock', [
 '$httpBackend',
 function($httpBackend) {
-  var urlRe = /^((http:\/)?\/[\w\-\.]+|)(\/[\w\-]+|\/\?)*$/;
+  var urlRe = /^((http(s)?:\/)?\/[\w\-\.]+|)(\/[\w\-]+|\/\?)*$/;
   function BasicMock(baseUrl, options) {
     this._baseUrl = baseUrl || '';
     if (!(urlRe.test(this._baseUrl))) {
