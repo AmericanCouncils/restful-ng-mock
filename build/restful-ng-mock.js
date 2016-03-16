@@ -2,7 +2,7 @@
 * restful-ng-mock JavaScript Library
 * https://github.com/AmericanCouncils/restful-ng-mock/ 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 03/18/2014 15:04
+* Compiled At: 03/11/2016 09:27
 ***********************************************/
 (function(window) {
 'use strict';
@@ -14,7 +14,7 @@ angular.module('restfulNgMock')
 .factory('basicMock', [
 '$httpBackend',
 function($httpBackend) {
-  var urlRe = /^(\/[\w\-]+|)(\/[\w\-]+|\/\?)*$/;
+  var urlRe = /^((http(s)?:\/)?\/[\w\-\.]+|)(\/[\w\-]+|\/\?)*$/;
   function BasicMock(baseUrl, options) {
     this._baseUrl = baseUrl || '';
     if (!(urlRe.test(this._baseUrl))) {
@@ -139,6 +139,10 @@ function($httpBackend) {
     var urlPattern = fullUrl
       .replace(/\//g, '\\/')
       .replace(/\?/g, '([\\w\\-]+)');
+    var baseUrl = purl(fullUrl, true).attr('base')
+      .replace(/\//g, '\\/')
+      .replace(/\?/g, '([\\w\\-]+)');
+    urlPattern = urlPattern.replace(baseUrl, '(?:' + baseUrl + ')?');
     var re = new RegExp( '^' + urlPattern  + '(?:\\?.*)?$');
 
     var routeOptions = new this.RouteOptions();
@@ -405,8 +409,8 @@ function(basicMock) {
     }
   };
 
-  var ResourceMockFactory = function(baseUrl, dataSource) {
-    return new ResourceMock(baseUrl, dataSource);
+  var ResourceMockFactory = function(baseUrl, dataSource, options) {
+    return new ResourceMock(baseUrl, dataSource, options);
   };
   ResourceMockFactory.classFn = ResourceMock;
   return ResourceMockFactory;
